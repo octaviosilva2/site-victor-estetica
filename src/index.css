@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+@font-face {
+  font-family: 'Luxerie';
+  src: url('/Luxerie.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary - Champagne Gold */
+    --primary: 144 7% 46%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Backgrounds */
+    --background: 0 0% 88%;
+    --background-dark: 0 0% 6%;
+    --background-subtle: 0 0% 92%;
+    
+    /* Foreground */
+    --foreground: 0 0% 8%;
+    --foreground-light: 0 0% 100%;
+    --foreground-muted: 0 0% 45%;
+    
+    /* Card */
+    --card: 0 0% 93%;
+    --card-foreground: 0 0% 8%;
+    
+    /* Popover */
+    --popover: 0 0% 93%;
+    --popover-foreground: 0 0% 8%;
+    
+    /* Secondary */
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 15%;
+    
+    /* Muted */
+    --muted: 0 0% 91%;
+    --muted-foreground: 0 0% 45%;
+    
+    /* Accent */
+    --accent: 144 7% 46%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Border & Input */
+    --border: 0 0% 82%;
+    --input: 0 0% 82%;
+    --ring: 144 7% 46%;
+    
+    --radius: 0.5rem;
+    
+    /* Sidebar */
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --primary: 144 7% 46%;
+    --primary-foreground: 0 0% 100%;
+    --background: 0 0% 6%;
+    --background-dark: 0 0% 4%;
+    --background-subtle: 0 0% 10%;
+    --foreground: 0 0% 95%;
+    --foreground-light: 0 0% 100%;
+    --foreground-muted: 0 0% 60%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 95%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 144 7% 46%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 144 7% 46%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .font-luxerie {
+    font-family: 'Luxerie', serif;
+  }
+
+  .font-playfair {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .section-padding {
+    @apply px-6 py-20 md:px-12 md:py-28 lg:px-20 lg:py-32;
+  }
+
+  .container-narrow {
+    @apply max-w-6xl mx-auto;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+
+  .bg-dark {
+    background-color: hsl(var(--background-dark));
+  }
+
+  .bg-subtle {
+    background-color: hsl(var(--background-subtle));
+  }
+
+  .text-light {
+    color: hsl(var(--foreground-light));
+  }
+
+  .text-muted-custom {
+    color: hsl(var(--foreground-muted));
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.6s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.8);
+}
