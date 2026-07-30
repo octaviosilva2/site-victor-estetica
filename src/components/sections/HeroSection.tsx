@@ -1,58 +1,87 @@
 import { siteConfig } from "@/lib/siteConfig";
-import { Button } from "@/components/ui/button";
-import clinicReception from "@/assets/clinic-reception-new.png";
-import heroMobile from "@/assets/hero-mobile.jpg";
+import ScheduleButton from "@/components/ScheduleButton";
+import { FadeIn, FadeInUp } from "@/hooks/useScrollAnimation";
 
 const HeroSection = () => {
-  const handleWhatsApp = () => {
-    window.open(siteConfig.links.whatsappUrl, "_blank");
-  };
+  const { professional, cta, heroChecklist } = siteConfig;
+
   return (
-    <section className="relative min-h-[92vh] sm:min-h-[600px] h-[90vh] flex items-center justify-center overflow-hidden">
-      {/* Background Image - Desktop */}
-      <div 
-        className="absolute inset-0 bg-cover bg-no-repeat scale-105 bg-center hidden sm:block"
-        style={{ 
-          backgroundImage: `url(${clinicReception})`,
-          filter: 'blur(2px)'
-        }}
-      />
-      {/* Background Image - Mobile */}
-      <div 
-        className="absolute inset-0 bg-cover bg-no-repeat scale-105 bg-[center_30%] sm:hidden"
-        style={{ 
-          backgroundImage: `url(${heroMobile})`,
-          filter: 'blur(2px)'
-        }}
-      />
-      
-      {/* Dark Overlay */}
-      <div className="absolute inset-0 bg-black/50 sm:bg-black/45" />
-      
-      {/* Content */}
-      <div className="relative z-10 text-center px-4 animate-fade-in-up max-w-[90vw] sm:max-w-none mx-auto flex flex-col items-center">
-        {/* Specialty Badge */}
-        <span className="inline-block text-white/90 text-[0.65rem] sm:text-sm md:text-base font-semibold tracking-[0.25em] sm:tracking-[0.4em] uppercase mb-5 sm:mb-6 md:mb-8">
-          {siteConfig.professional.specialty}
-        </span>
-        {/* Name */}
-        <h1 className="font-luxerie text-[2rem] xs:text-[2.5rem] sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl text-white font-normal mb-4 sm:mb-4 md:mb-6 leading-[1.15] tracking-[0.12em] sm:tracking-widest whitespace-nowrap">
-          {siteConfig.professional.name}
-        </h1>
-        {/* Support Text */}
-        <p className="text-white/60 text-[0.8rem] sm:text-sm md:text-base max-w-[280px] sm:max-w-xl mx-auto mb-6 md:mb-8 leading-relaxed">
-          Protocolos personalizados que unem ciência, precisão e naturalidade para resultados elegantes e progressivos.
-        </p>
-        {/* CTA Button */}
-        <Button
-          onClick={handleWhatsApp}
-          size="lg"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full w-[min(300px,88%)] sm:w-auto px-10 md:px-16 py-5 sm:py-7 md:py-8 text-sm md:text-lg font-medium tracking-wide transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-primary/30"
-        >
-          {siteConfig.cta.heroButton}
-        </Button>
+    <header id="top" className="grad-hero px-6 pb-24 pt-16 md:px-12 md:pb-28 lg:px-20">
+      <div className="mx-auto max-w-4xl">
+        <div className="grid items-center gap-11 md:grid-cols-[1.15fr_.85fr]">
+          {/* Coluna de texto */}
+          <div>
+            <FadeIn>
+              <p className="eyebrow m-0">Estética Avançada · {professional.city}</p>
+            </FadeIn>
+
+            <FadeInUp delay={80}>
+              <h1 className="mb-4 mt-4 text-[clamp(2rem,5.2vw,2.875rem)] font-normal leading-[1.08] text-foreground">
+                Dr. Victor
+                <br />
+                <span className="font-medium italic text-primary">Folster</span>
+              </h1>
+            </FadeInUp>
+
+            <FadeInUp delay={140}>
+              <p className="mb-6 max-w-[27.5rem] text-[15px] leading-[1.65] text-foreground-muted">
+                Farmacêutico esteta especializado em {professional.focusAreas}, com planejamento individual
+                em cada caso.
+              </p>
+            </FadeInUp>
+
+            {/* Linha de especialização — só texto, não é botão nem link */}
+            <FadeInUp delay={180}>
+              <p className="mb-7 border-y border-foreground/[0.18] py-3 text-[11px] uppercase tracking-[0.08em] text-foreground-muted">
+                <strong className="font-bold text-primary">{professional.role}</strong> · Estética
+                Regenerativa · Reestruturação Facial
+              </p>
+            </FadeInUp>
+
+            <FadeInUp delay={220}>
+              <div className="mb-7 flex flex-wrap gap-2.5">
+                <ScheduleButton />
+                <a
+                  href="#procedimentos"
+                  className="btn-texture inline-flex items-center justify-center rounded-[2px] border border-primary px-6 py-3.5 text-[12.5px] font-semibold uppercase tracking-[0.05em] text-primary no-underline transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {cta.secondaryButton}
+                </a>
+              </div>
+            </FadeInUp>
+
+            <FadeInUp delay={260}>
+              <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+                {heroChecklist.map((item) => (
+                  <li key={item} className="flex items-center gap-2.5 text-[13px] text-foreground-muted">
+                    <span aria-hidden="true" className="font-bold text-primary">
+                      —
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </FadeInUp>
+          </div>
+
+          {/* Foto + selo do conselho */}
+          <FadeIn delay={200}>
+            <div className="relative">
+              <img
+                src="/FOTO_PROFISSIONAL_VICTOR.jpg"
+                alt={`${professional.name}, ${professional.role.toLowerCase()}`}
+                className="aspect-[3/4] w-full rounded-[2px] border border-primary/30 object-cover object-top"
+              />
+              <p className="absolute -bottom-3.5 -left-3.5 m-0 rounded-[2px] bg-primary px-4 py-3 text-center text-[11.5px] leading-[1.4] text-white shadow-[0_6px_18px_rgba(0,0,0,.25)]">
+                <strong className="block font-serif text-[15px] font-medium">{professional.council}</strong>
+                {professional.councilNumber}
+              </p>
+            </div>
+          </FadeIn>
+        </div>
       </div>
-    </section>
+    </header>
   );
 };
+
 export default HeroSection;

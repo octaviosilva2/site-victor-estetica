@@ -1,57 +1,48 @@
 import { siteConfig } from "@/lib/siteConfig";
-import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react";
 import { FadeIn, FadeInUp } from "@/hooks/useScrollAnimation";
+import clinicWork from "@/assets/clinic-reception-new.png";
 
 const AboutSection = () => {
-  const handleWhatsApp = () => {
-    window.open(siteConfig.links.whatsappUrl, "_blank");
-  };
+  const { about, professional } = siteConfig;
+
   return (
     <section id="sobre" className="section-padding bg-background">
-      <div className="container-narrow">
-        <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-start">
-          {/* Left Column - Foto Profissional */}
-          <FadeIn>
-            <div className="aspect-[3/4] overflow-hidden rounded-2xl">
-              <img
-                src="/FOTO_PROFISSIONAL_VICTOR.jpg"
-                alt="Dr. Victor Folster"
-                className="w-full h-full object-cover"
-              />
-            </div>
+      <div className="mx-auto max-w-3xl">
+        <FadeIn>
+          <p className="eyebrow m-0">Sobre</p>
+          <h2 className="mb-8 mt-3 text-[27px] font-normal">{about.title}</h2>
+        </FadeIn>
+
+        <div className="grid items-start gap-7 sm:grid-cols-[13.75rem_1fr]">
+          <FadeIn delay={120}>
+            <img
+              src={clinicWork}
+              alt={`${professional.name} durante um atendimento`}
+              className="mx-auto h-[13.75rem] w-[13.75rem] rounded-[2px] border border-primary/30 object-cover sm:h-[13.75rem] sm:w-full"
+            />
           </FadeIn>
-          {/* Right Column - Content */}
-          <FadeInUp delay={200} className="flex flex-col justify-center">
-            <h2 className="font-playfair text-3xl md:text-4xl lg:text-5xl text-foreground mb-2">
-              {siteConfig.about.title}
-            </h2>
-            <p className="text-primary text-sm tracking-wider mb-6">
-              {siteConfig.professional.credentials}
-            </p>
-            <p className="text-foreground-muted text-lg leading-relaxed mb-8">
-              Especialista em <strong>Farmácia Estética e Clínica</strong>, com sólida experiência na integração entre conhecimento científico e prática estética avançada, dedicado a potencializar a beleza natural de cada paciente por meio de protocolos personalizados, seguros e com resultados harmoniosos e realistas.
-            </p>
-            {/* Highlights */}
-            <ul className="space-y-4 mb-10">
-              {siteConfig.about.highlights.map((highlight, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-foreground">{highlight}</span>
+
+          <FadeInUp delay={180}>
+            <p className="mb-6 text-[15.5px] leading-[1.8] text-foreground-muted">{about.description}</p>
+
+            <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+              {about.highlights.map((highlight) => (
+                <li
+                  key={highlight}
+                  className="relative border-t border-border pl-5 pt-2.5 text-[13.5px] text-foreground-muted"
+                >
+                  <span aria-hidden="true" className="absolute left-0 top-2.5 font-bold text-primary">
+                    —
+                  </span>
+                  {highlight}
                 </li>
               ))}
             </ul>
-            <Button
-              onClick={handleWhatsApp}
-              size="lg"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-full px-8 py-6 font-medium tracking-wide transition-all duration-300 hover:scale-105 w-fit"
-            >
-              {siteConfig.cta.heroButton}
-            </Button>
           </FadeInUp>
         </div>
       </div>
     </section>
   );
 };
+
 export default AboutSection;

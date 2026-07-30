@@ -1,25 +1,21 @@
 import { siteConfig } from "@/lib/siteConfig";
-import { MessageCircle } from "lucide-react";
+import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
 
-const WhatsAppButton = () => {
-  const handleWhatsApp = () => {
-    window.open(siteConfig.links.whatsappUrl, "_blank");
-  };
-
-  return (
-    <button
-      onClick={handleWhatsApp}
-      className="fixed bottom-6 right-6 z-50 w-14 h-14 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 flex items-center justify-center group"
-      aria-label="Contato WhatsApp"
-    >
-      <MessageCircle className="w-7 h-7" />
-      
-      {/* Tooltip */}
-      <span className="absolute right-full mr-3 px-3 py-2 bg-foreground text-foreground-light text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-        Fale conosco
-      </span>
-    </button>
-  );
-};
+/**
+ * Botão flutuante de WhatsApp, com o ícone real do app (não o símbolo
+ * genérico de telefone ou de balão de conversa).
+ */
+const WhatsAppButton = () => (
+  <a
+    href={siteConfig.links.whatsappUrl}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Falar no WhatsApp"
+    title="WhatsApp"
+    className="group fixed bottom-6 right-6 z-40 flex h-[52px] w-[52px] items-center justify-center rounded-full bg-primary text-white shadow-[0_4px_14px_rgba(0,0,0,.18)] transition-transform duration-300 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+  >
+    <WhatsAppIcon className="h-6 w-6" />
+  </a>
+);
 
 export default WhatsAppButton;

@@ -1,30 +1,31 @@
+import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/sections/HeroSection";
+import ProceduresSection from "@/components/sections/ProceduresSection";
 import AboutSection from "@/components/sections/AboutSection";
 import MethodSection from "@/components/sections/MethodSection";
-import ProceduresSection from "@/components/sections/ProceduresSection";
 import ResultsSection from "@/components/sections/ResultsSection";
+import ReviewsSection from "@/components/sections/ReviewsSection";
 import FinalSection from "@/components/sections/FinalSection";
+import ContactSection from "@/components/sections/ContactSection";
 import FooterSection from "@/components/sections/FooterSection";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import logoVictor from "@/assets/logo-victor.png";
 
-const Index = () => {
-  return (
-    <main className="overflow-x-hidden">
-      {/* Logo */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20">
-        <img src={logoVictor} alt="Dr. Victor Folster" className="h-8 sm:h-10 w-auto invert opacity-90" />
-      </div>
+const Index = () => (
+  <div className="overflow-x-hidden">
+    <Navbar />
+    <main>
       <HeroSection />
+      <ProceduresSection />
       <AboutSection />
       <MethodSection />
-      <ProceduresSection />
       <ResultsSection />
+      <ReviewsSection />
       <FinalSection />
-      <FooterSection />
-      <WhatsAppButton />
+      <ContactSection />
     </main>
-  );
-};
+    <FooterSection />
+    <WhatsAppButton />
+  </div>
+);
 
 export default Index;

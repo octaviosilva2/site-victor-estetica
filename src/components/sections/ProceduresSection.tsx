@@ -1,105 +1,52 @@
 import { useState } from "react";
-import { siteConfig } from "@/lib/siteConfig";
+import { procedures } from "@/lib/procedures";
 import { FadeIn, FadeInUp } from "@/hooks/useScrollAnimation";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import ProcedureDetail from "@/components/ProcedureDetail";
 
 const ProceduresSection = () => {
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
-
-  // Use fewer procedures for cleaner look
-  const mainProcedures = siteConfig.procedures;
-
-  // Split into 2 columns
-  const midpoint = Math.ceil(mainProcedures.length / 2);
-  const leftColumn = mainProcedures.slice(0, midpoint);
-  const rightColumn = mainProcedures.slice(midpoint);
-
-  const handleToggle = (index: number) => {
-    setExpandedIndex(expandedIndex === index ? null : index);
-  };
-
-  const handleWhatsApp = (procedure: string) => {
-    window.open(
-      `https://wa.me/${siteConfig.contact.whatsapp}?text=Olá! Gostaria de saber mais sobre ${procedure}.`,
-      "_blank"
-    );
-  };
-
-  const ProcedureItem = ({ procedure, index }: { procedure: string; index: number }) => {
-    const isExpanded = expandedIndex === index;
-
-    return (
-      <div className="border-b border-border/50 last:border-b-0">
-        <button
-          onClick={() => handleToggle(index)}
-          className="w-full flex items-center justify-between py-4 text-left group"
-        >
-          <div className="flex items-center gap-3">
-            <span className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />
-            <span className="text-lg text-foreground group-hover:text-primary transition-colors duration-300">
-              {procedure}
-            </span>
-          </div>
-          {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-primary" />
-          ) : (
-            <ChevronDown className="w-5 h-5 text-foreground-muted group-hover:text-primary transition-colors" />
-          )}
-        </button>
-
-        {isExpanded && (
-          <div className="pb-4 pl-6 animate-fade-in">
-            <p className="text-foreground-muted text-sm mb-3 whitespace-pre-line">
-              {siteConfig.procedureDetails?.[procedure] || "Procedimento realizado com técnicas modernas e seguras, garantindo resultados naturais e harmoniosos."}
-            </p>
-            <Button
-              onClick={() => handleWhatsApp(procedure)}
-              variant="outline"
-              size="sm"
-              className="rounded-full text-sm border-primary text-primary hover:bg-primary hover:text-primary-foreground"
-            >
-              Saiba mais sobre o procedimento
-            </Button>
-          </div>
-        )}
-      </div>
-    );
-  };
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
+  const activeProcedure = procedures.find((p) => p.slug === openSlug) ?? null;
 
   return (
-    <section id="procedimentos" className="section-padding bg-background-subtle">
-      <div className="container-narrow">
-        {/* Title */}
-        <FadeIn className="text-center mb-16">
-          <h2 className="font-playfair text-3xl md:text-4xl lg:text-5xl text-foreground mb-4">
-            Procedimentos
-          </h2>
-          <p className="text-foreground-muted max-w-xl mx-auto mb-6">
-            Cada procedimento é indicado após avaliação criteriosa, respeitando a fisiologia da pele e a identidade facial.
-          </p>
-          <div className="w-20 h-0.5 bg-primary mx-auto" />
-        </FadeIn>
+    <>
+      <section id="procedimentos" className="section-padding bg-background">
+        <div className="mx-auto max-w-3xl">
+          <FadeIn>
+            <p className="eyebrow m-0">Procedimentos</p>
+            <h2 className="mb-4 mt-3 text-[27px] font-normal">Áreas de atuação</h2>
+            <p className="mb-9 max-w-[32.5rem] text-[15px] leading-[1.6] text-foreground-muted">
+              Cada procedimento é indicado após avaliação individual — nenhum protocolo é aplicado de forma
+              padronizada.
+            </p>
+          </FadeIn>
 
-        {/* Procedures Grid - 2 columns */}
-        <FadeInUp delay={200} className="grid md:grid-cols-2 gap-x-12 lg:gap-x-20">
-          <div>
-            {leftColumn.map((procedure, index) => (
-              <ProcedureItem key={index} procedure={procedure} index={index} />
-            ))}
-          </div>
-          <div>
-            {rightColumn.map((procedure, index) => (
-              <ProcedureItem
-                key={midpoint + index}
-                procedure={procedure}
-                index={midpoint + index}
-              />
-            ))}
-          </div>
-        </FadeInUp>
-      </div>
-    </section>
+          <FadeInUp delay={120}>
+            <ul className="m-0 flex list-none flex-col gap-3 p-0">
+              {procedures.map((procedure) => (
+                <li key={procedure.slug}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenSlug(procedure.slug)}
+                    aria-haspopup="dialog"
+                    className="flex w-full items-center justify-between gap-3 rounded-[2px] bg-primary p-[22px] text-left text-white transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                  >
+                    <span>
+                      <span className="block font-serif text-[17px] font-normal">{procedure.title}</span>
+                      <span className="mt-1 block text-[12.5px] text-white/65">{procedure.short}</span>
+                    </span>
+                    <span aria-hidden="true" className="flex-shrink-0 text-[18px] italic text-white/70">
+                      →
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </FadeInUp>
+        </div>
+      </section>
+
+      <ProcedureDetail procedure={activeProcedure} onClose={() => setOpenSlug(null)} />
+    </>
   );
 };
 
