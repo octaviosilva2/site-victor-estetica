@@ -1,6 +1,57 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Fontes: preconnect + link direto no HTML. Antes vinham por @import no
+         CSS, o que criava uma cadeia de requisições (CSS baixa, só então
+         descobre a fonte) e atrasava a renderização do texto. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Manrope:wght@400;500;600;700&display=swap"
+    />
+
+    <!-- Imagem principal do hero: pré-carregada para melhorar o LCP -->
+    <link rel="preload" as="image" href="/FOTO_PROFISSIONAL_VICTOR.jpg" fetchpriority="high" />
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <meta name="theme-color" content="#4B5A45" />
+    <meta name="author" content="Dr. Victor Folster" />
+    <meta name="geo.region" content="BR-SC" />
+    <meta name="geo.placename" content="Jaraguá do Sul" />
+
+    <!-- As tags abaixo são reescritas por rota no build (scripts/prerender.mjs)
+         e sincronizadas na navegação pelo componente <Seo>. Os valores aqui
+         servem de fallback para a home. -->
+    <title>Dr. Victor Folster | Farmacêutico Esteta em Jaraguá do Sul</title>
+    <meta
+      name="description"
+      content="Estética avançada com base clínica em Jaraguá do Sul – SC: reestruturação facial, toxina botulínica, preenchimentos e estética regenerativa. Avaliação individual."
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <link rel="canonical" href="https://victorfolster.com.br" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Dr. Victor Folster" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:url" content="https://victorfolster.com.br" />
+    <meta property="og:title" content="Dr. Victor Folster | Farmacêutico Esteta em Jaraguá do Sul" />
+    <meta
+      property="og:description"
+      content="Estética avançada com base clínica em Jaraguá do Sul – SC: reestruturação facial, toxina botulínica, preenchimentos e estética regenerativa. Avaliação individual."
+    />
+    <meta property="og:image" content="https://victorfolster.com.br/FOTO_PROFISSIONAL_VICTOR.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dr. Victor Folster | Farmacêutico Esteta em Jaraguá do Sul" />
+    <meta
+      name="twitter:description"
+      content="Estética avançada com base clínica em Jaraguá do Sul – SC: reestruturação facial, toxina botulínica, preenchimentos e estética regenerativa. Avaliação individual."
+    />
+    <meta name="twitter:image" content="https://victorfolster.com.br/FOTO_PROFISSIONAL_VICTOR.jpg" />
+
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -8,25 +59,7 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-PXHZD2GS');</script>
     <!-- End Google Tag Manager -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dr. Victor Folster | Estética Avançada</title>
-    <meta name="description" content="Farmacêutico esteta em Jaraguá do Sul, especializado em Reestruturação Facial, Estética Regenerativa e Saúde Capilar. Avaliação individual, resultados naturais e protocolos regulamentados.">
-    <meta name="author" content="Dr. Victor Folster" />
-
-    <meta property="og:type" content="website" />
-    
-    
-    <meta name="twitter:card" content="summary_large_image" />
-    
-    
-    <meta property="og:title" content="Dr. Victor Folster | Estética Avançada">
-  <meta name="twitter:title" content="Dr. Victor Folster | Estética Avançada">
-  <meta property="og:description" content="Farmacêutico esteta em Jaraguá do Sul, especializado em Reestruturação Facial, Estética Regenerativa e Saúde Capilar. Avaliação individual e resultados naturais.">
-  <meta name="twitter:description" content="Farmacêutico esteta em Jaraguá do Sul, especializado em Reestruturação Facial, Estética Regenerativa e Saúde Capilar. Avaliação individual e resultados naturais.">
-  <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/azh04Vtp1Ig4T45V0sWlf9qHq973/social-images/social-1773861605983-FAVICOIN_FUTURO_VICTOR_SITE.webp">
-  <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/azh04Vtp1Ig4T45V0sWlf9qHq973/social-images/social-1773861605983-FAVICOIN_FUTURO_VICTOR_SITE.webp">
-</head>
+  </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PXHZD2GS"

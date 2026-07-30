@@ -24,6 +24,11 @@ export interface Procedure {
   /** Identificador estável para links e âncoras. */
   slug: string;
   title: string;
+  /**
+   * Artigo definido do nome do procedimento ("a toxina botulínica",
+   * "o bioestimulador"). Usado para montar títulos em português correto.
+   */
+  article: "o" | "a";
   /** Linha curta, exibida no card da listagem. */
   short: string;
   /** Descrição completa, exibida na tela de detalhe. */
@@ -43,6 +48,7 @@ export const procedures: Procedure[] = [
   {
     slug: "toxina-botulinica",
     title: "Toxina Botulínica",
+    article: "a",
     short: "Suaviza linhas de expressão com efeito preventivo quando aplicada precocemente.",
     detail:
       "A toxina botulínica bloqueia temporariamente o sinal do nervo para o músculo, reduzindo a contração responsável pelas rugas dinâmicas — as que aparecem ao movimentar o rosto.",
@@ -87,6 +93,7 @@ export const procedures: Procedure[] = [
   {
     slug: "bioestimulador-de-colageno",
     title: "Bioestimulador de Colágeno",
+    article: "o",
     short: "Estímulo progressivo de colágeno para firmeza da pele.",
     detail:
       "Estimula os fibroblastos a produzir colágeno novo de forma gradual, em vez de preencher volume instantaneamente — resultado que evolui ao longo dos meses seguintes.",
@@ -132,6 +139,7 @@ export const procedures: Procedure[] = [
   {
     slug: "preenchimento-de-olheira",
     title: "Preenchimento de Olheira",
+    article: "o",
     short: "Suaviza o sulco lacrimal e a aparência de cansaço.",
     detail:
       "Ácido hialurônico específico para a área fina da região dos olhos é injetado no sulco lacrimal, repondo volume perdido e suavizando a sombra que dá aspecto de cansaço.",
@@ -174,6 +182,7 @@ export const procedures: Procedure[] = [
   {
     slug: "reestruturacao-facial",
     title: "Reestruturação Facial",
+    article: "a",
     short: "Planejamento estrutural do rosto para equilíbrio e naturalidade.",
     detail:
       "Avalia o rosto como um conjunto — não como pontos isolados — redistribuindo volume e contorno entre queixo, nariz, lábios e outras estruturas, geralmente combinando ácido hialurônico em mais de uma região.",
@@ -222,6 +231,7 @@ export const procedures: Procedure[] = [
   {
     slug: "preenchimento-labial",
     title: "Preenchimento Labial",
+    article: "o",
     short: "Volume e contorno labial proporcionais ao rosto, sem aspecto artificial.",
     detail:
       "Injeção de ácido hialurônico nos lábios para repor volume, definir contorno e hidratar a região.",
@@ -267,6 +277,7 @@ export const procedures: Procedure[] = [
   {
     slug: "profiloplastia",
     title: "Profiloplastia",
+    article: "a",
     short: "Reequilíbrio do perfil facial — nariz, lábios e queixo — sem cirurgia.",
     detail:
       "Reequilibra nariz, lábios e queixo como um conjunto, tratando o perfil facial como um todo em vez de uma região isolada, com ácido hialurônico.",
@@ -313,6 +324,7 @@ export const procedures: Procedure[] = [
   {
     slug: "rinomodelacao",
     title: "Rinomodelação",
+    article: "a",
     short: "Ajustes pontuais no nariz sem cirurgia.",
     detail:
       "Aplicação de ácido hialurônico no dorso, ponta ou columela do nariz para corrigir pequenas irregularidades de contorno.",
@@ -358,6 +370,7 @@ export const procedures: Procedure[] = [
   {
     slug: "ultrassom-microfocado",
     title: "Ultrassom Microfocado",
+    article: "o",
     short: "Estímulo de colágeno em profundidade para firmar a pele sem cortes.",
     detail:
       "Ondas de ultrassom focalizado atingem camadas profundas da pele, estimulando produção de colágeno sem cortes.",
@@ -398,6 +411,7 @@ export const procedures: Procedure[] = [
   {
     slug: "laser-de-co2",
     title: "Laser de CO2",
+    article: "o",
     short: "Renovação da textura da pele: manchas, poros e linhas finas.",
     detail:
       "O laser fracionado cria microzonas controladas de aquecimento na pele, retirando camadas danificadas e estimulando renovação e produção de colágeno.",
@@ -437,6 +451,7 @@ export const procedures: Procedure[] = [
   {
     slug: "estetica-regenerativa",
     title: "Estética Regenerativa",
+    article: "a",
     short:
       "Protocolos regenerativos (bioestimuladores, GHK-Cu, PDRN, peptídeos) para renovação progressiva.",
     detail:
@@ -481,6 +496,7 @@ export const procedures: Procedure[] = [
   {
     slug: "microagulhamento",
     title: "Microagulhamento",
+    article: "o",
     short: "Renovação celular e estímulo de colágeno via microlesões controladas.",
     detail:
       "Microagulhas criam pequenas lesões controladas na pele, ativando o processo natural de reparo e estimulando a produção de colágeno.",
@@ -522,6 +538,7 @@ export const procedures: Procedure[] = [
   {
     slug: "peeling-quimico",
     title: "Peeling Químico",
+    article: "o",
     short: "Renovação da pele com ácidos, tratando manchas e textura irregular.",
     detail:
       "Aplicação de ácidos que promovem esfoliação controlada da pele, removendo camadas danificadas e estimulando a renovação celular.",

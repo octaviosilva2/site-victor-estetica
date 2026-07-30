@@ -4,11 +4,18 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
+# Bots de prévia de link — precisam acessar as páginas para montar o cartão
+# de compartilhamento (WhatsApp e Instagram não executam JavaScript).
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: WhatsApp
+Allow: /
+
 User-agent: *
 Allow: /
+
+Sitemap: https://victorfolster.com.br/sitemap.xml

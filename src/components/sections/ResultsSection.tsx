@@ -3,9 +3,9 @@ import { siteConfig } from "@/lib/siteConfig";
 import { FadeIn, FadeInUp } from "@/hooks/useScrollAnimation";
 
 const results = [
-  { src: "/ANTESEDEPOIS_1.jpg", alt: "Antes e depois de um caso real atendido no consultório" },
-  { src: "/ANTESEDEPOIS_2.jpg", alt: "Antes e depois de um caso real atendido no consultório" },
-  { src: "/ANTESEDEPOIS_3.jpg", alt: "Antes e depois de um caso real atendido no consultório" },
+  { src: "/ANTESEDEPOIS_1.jpg", alt: "Antes e depois de reestruturação facial em paciente atendida em Jaraguá do Sul" },
+  { src: "/ANTESEDEPOIS_2.jpg", alt: "Antes e depois de procedimento estético facial em caso real atendido no consultório" },
+  { src: "/ANTESEDEPOIS_3.jpg", alt: "Antes e depois de harmonização e reestruturação facial em caso real" },
 ];
 
 const ResultsSection = () => (
@@ -27,7 +27,10 @@ const ResultsSection = () => (
               key={result.src}
               src={result.src}
               alt={result.alt}
+              width={1279}
+              height={1600}
               loading="lazy"
+              decoding="async"
               className="aspect-[3/4] w-full rounded-[2px] border border-primary/30 object-cover"
             />
           ))}

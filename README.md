@@ -59,6 +59,49 @@ de uma vez.
 **E-mail de contato.** `contact.email` está vazio em `siteConfig.ts`. Ao preencher, a linha
 de e-mail aparece sozinha no bloco de contato.
 
+### SEO
+
+O site é uma SPA, mas o `npm run build` **pré-renderiza HTML estático** para cada rota
+(`scripts/prerender.mjs`, via `react-dom/server`). São 13 páginas: a home e uma por
+procedimento, em `/procedimentos/<slug>`. Cada uma sai do build com `title`, `description`,
+canonical, Open Graph e JSON-LD já no código-fonte — o que importa porque as prévias de link
+do WhatsApp e do Instagram não executam JavaScript.
+
+Etapas do build:
+
+```sh
+vite build                  # bundle do cliente
+vite build --ssr …          # bundle de renderização (dist-ssr, não é publicado)
+node scripts/prerender.mjs  # 13 HTMLs + 404.html + sitemap.xml
+```
+
+Se o host servir sempre o `index.html` (fallback de SPA), os arquivos pré-renderizados são
+ignorados e o site funciona como antes — a degradação é segura. Para gerar só o bundle sem
+pré-renderizar: `npm run build:spa`.
+
+Onde mexer:
+
+- **`src/lib/seo.ts`** — domínio, cidade-alvo, títulos, descrições e todo o JSON-LD
+  (`HealthAndBeautyBusiness`, `Person`, `Service`, `FAQPage`, `BreadcrumbList`). É a fonte
+  única: o mesmo módulo alimenta o prerender e o componente `<Seo>`, que atualiza o `<head>`
+  na navegação entre rotas.
+- **`src/lib/procedures.ts`** — adicionar um procedimento aqui cria a página, entra no
+  sitemap e ganha dados estruturados automaticamente.
+
+Pendências de SEO que dependem de informação ou de arquivo do cliente:
+
+- **Horário de atendimento** — `contact.openingHours` em `siteConfig.ts` está vazio. O Google
+  usa isso no resultado de busca e no mapa ("aberto agora"); ao preencher, entra no JSON-LD
+  sozinho.
+- **Imagens pesadas** — `logo-victor.png` tem 269 KB para ser exibida com 28 px de altura, e
+  o `favicon.ico` tem 262 KB. Reexportar a logo em ~64×80 WebP e o favicon em 32×32 derruba
+  isso para poucos KB e melhora o LCP. As três fotos de antes/depois têm ~380 KB cada
+  (carregam sob demanda, então o impacto é menor).
+- **Imagem de compartilhamento** — hoje o `og:image` usa a foto do perfil. Uma imagem
+  dedicada em 1200×630 aproveita melhor o espaço do cartão de link.
+- **Google Search Console** — cadastrar o domínio e enviar
+  `https://victorfolster.com.br/sitemap.xml`.
+
 ### Licença
 
 MIT — ver [LICENSE](LICENSE). O código é genérico (scaffold Lovable/shadcn); nenhum dado de negócio proprietário do cliente está no repositório além do conteúdo já público no site ao vivo (nome, procedimentos, contato).
@@ -109,6 +152,24 @@ explaining what's missing shows in development instead.
 
 **Button texture.** Drop the texture at `public/button-texture.png` and uncomment the
 `.btn-texture::before` block in `src/index.css` to apply it to every button at once.
+
+### SEO
+
+Although this is a SPA, `npm run build` **prerenders static HTML** for every route
+(`scripts/prerender.mjs`, using `react-dom/server`): 13 pages — the homepage plus one per
+procedure at `/procedimentos/<slug>` — each shipping its own `title`, `description`,
+canonical, Open Graph tags and JSON-LD in the source. This matters because WhatsApp and
+Instagram link previews don't execute JavaScript.
+
+`src/lib/seo.ts` is the single source of truth for metadata and structured data
+(`HealthAndBeautyBusiness`, `Person`, `Service`, `FAQPage`, `BreadcrumbList`); it feeds both
+the prerender step and the client-side `<Seo>` component. Adding an entry to
+`src/lib/procedures.ts` creates the page, adds it to `sitemap.xml` and generates its
+structured data automatically.
+
+If the host always serves `index.html` (SPA fallback), the prerendered files are ignored and
+the site behaves as before — the degradation is safe. Use `npm run build:spa` to skip
+prerendering.
 
 ### License
 

@@ -94,6 +94,16 @@ export const siteConfig = {
     mapEmbedUrl:
       "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3578.5!2d-49.0714!3d-26.4864!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRua+Henrique+Spengler%2C+90+-+Vila+Nova%2C+Jaragu%C3%A1+do+Sul+-+SC!5e0!3m2!1spt-BR!2sbr",
     clinicName: "Instituto Gaya - Jaraguá do Sul",
+
+    // SEO local: horário de atendimento. O Google usa isso no resultado de
+    // busca e no mapa ("aberto agora"). Está vazio porque eu não sei os
+    // horários — preencha e eles entram nos dados estruturados sozinhos.
+    // Ex.: [{ days: ["Monday", "Tuesday"], opens: "09:00", closes: "18:00" }]
+    openingHours: [] as Array<{ days: string[]; opens: string; closes: string }>,
+
+    // Faixa de preço no padrão do Google ("$", "$$", "$$$"). Vazio porque
+    // inventar isso seria informação falsa sobre o negócio.
+    priceRange: "",
   },
 
   // Links

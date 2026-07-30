@@ -14,7 +14,14 @@ const Navbar = () => (
         className="flex flex-shrink-0 items-center gap-2 no-underline"
         aria-label={`${siteConfig.professional.name} — início`}
       >
-        <img src={logoVictor} alt="" className="h-7 w-auto invert" aria-hidden="true" />
+        <img
+          src={logoVictor}
+          alt=""
+          width={1080}
+          height={1350}
+          className="h-7 w-auto invert"
+          aria-hidden="true"
+        />
         {/* No mobile o monograma já identifica a marca — o nome sairia
             comprimindo os links de navegação. */}
         <span className="hidden whitespace-nowrap font-serif text-base text-white sm:inline">

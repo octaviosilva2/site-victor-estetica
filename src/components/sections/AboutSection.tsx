@@ -17,7 +17,11 @@ const AboutSection = () => {
           <FadeIn delay={120}>
             <img
               src={clinicWork}
-              alt={`${professional.name} durante um atendimento`}
+              alt={`${professional.name}, ${professional.role.toLowerCase()}, durante um atendimento de estética avançada`}
+              width={1280}
+              height={859}
+              loading="lazy"
+              decoding="async"
               className="mx-auto h-[13.75rem] w-[13.75rem] rounded-[2px] border border-primary/30 object-cover sm:h-[13.75rem] sm:w-full"
             />
           </FadeIn>

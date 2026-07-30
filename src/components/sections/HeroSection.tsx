@@ -20,6 +20,13 @@ const HeroSection = () => {
                 Dr. Victor
                 <br />
                 <span className="font-medium italic text-primary">Folster</span>
+                {/* Complemento não visual: dá ao H1 o contexto de quem ele é e
+                    onde atende, que é como as pessoas buscam. O mesmo texto
+                    aparece visível logo abaixo. */}
+                <span className="sr-only">
+                  {" "}
+                  — {professional.role} em {professional.city}
+                </span>
               </h1>
             </FadeInUp>
 
@@ -69,7 +76,12 @@ const HeroSection = () => {
             <div className="relative">
               <img
                 src="/FOTO_PROFISSIONAL_VICTOR.jpg"
-                alt={`${professional.name}, ${professional.role.toLowerCase()}`}
+                alt={`${professional.name}, ${professional.role.toLowerCase()} em ${professional.city} – SC`}
+                width={870}
+                height={1007}
+                /* A prioridade de carregamento vem do <link rel="preload"
+                   fetchpriority="high"> no index.html — o React 18 não
+                   repassa o atributo fetchPriority para o DOM. */
                 className="aspect-[3/4] w-full rounded-[2px] border border-primary/30 object-cover object-top"
               />
               <p className="absolute -bottom-3.5 -left-3.5 m-0 rounded-[2px] bg-primary px-4 py-3 text-center text-[11.5px] leading-[1.4] text-white shadow-[0_6px_18px_rgba(0,0,0,.25)]">
