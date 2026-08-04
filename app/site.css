@@ -757,26 +757,49 @@ input:focus-visible {
   flex-shrink: 0;
 }
 
-/* Aceitar e recusar têm exatamente o mesmo estilo. A equivalência visual
-   é requisito de consentimento válido — destacar um dos dois vicia a
-   escolha. Não diferenciar por cor, tamanho ou peso. */
+/* Base compartilhada pelos dois botões: mesma altura, mesma fonte, mesma
+   largura mínima e mesma área de clique. A diferença permitida entre
+   aceitar e recusar é só o preenchimento — pedido do cliente em 2026-08-04
+   (P2 do plano de implementação). Diferença de tamanho, de fonte ou de
+   destaque tipográfico vicia a escolha e compromete a validade do
+   consentimento; não reintroduzir.
+   O min-width existe para que "Recusar" e "Aceitar" tenham a mesma largura
+   apesar do comprimento diferente das palavras. */
 .consent-btn {
+  min-width: 132px;
   padding: 10px 22px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: transparent;
-  color: var(--white);
+  border: 1px solid transparent;
   font-family: var(--font-manrope), system-ui, sans-serif;
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
-.consent-btn:hover {
+/* Recusar — contorno sobre o fundo do banner. */
+.consent-btn-decline {
+  background: transparent;
+  color: var(--white);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+
+.consent-btn-decline:hover {
   background: rgba(255, 255, 255, 0.14);
+}
+
+/* Aceitar — preenchido. Contraste de 7,4:1 nos dois sentidos, igual ao do
+   recusar sobre o mesmo fundo. */
+.consent-btn-accept {
+  background: var(--white);
+  color: var(--forest);
+  border-color: var(--white);
+}
+
+.consent-btn-accept:hover {
+  background: rgba(255, 255, 255, 0.86);
 }
 
 .consent-banner :focus-visible {

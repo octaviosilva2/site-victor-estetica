@@ -45,9 +45,18 @@ function updateConsent(granted: boolean) {
 /**
  * Banner de consentimento.
  *
- * Aceitar e recusar têm o mesmo peso visual — é exigência do protocolo de
- * privacidade, não preferência de design. Recusar não bloqueia nada: a
- * pessoa continua navegando igual, só não é medida.
+ * Aceitar e recusar diferem apenas no preenchimento — sólido e contorno.
+ * Tamanho, fonte, largura e área de clique são idênticos, e isso não é
+ * escolha estética: assimetria entre as duas opções compromete a validade
+ * do consentimento. Pedido do cliente em 2026-08-04 (P2 do plano de
+ * implementação), atendido nesta forma; botão de recusa menor foi recusado.
+ *
+ * O texto declara a coleta do identificador de clique de anúncio porque o
+ * aceite libera `ad_storage` e `ad_user_data` (decisão DT-2). Omitir isso
+ * faria o banner descrever menos do que o botão faz.
+ *
+ * Recusar não bloqueia nada: a pessoa continua navegando igual, só não é
+ * medida.
  */
 export default function ConsentBanner() {
   const [visible, setVisible] = useState(false);
@@ -80,18 +89,26 @@ export default function ConsentBanner() {
     <div className="consent-banner" role="region" aria-label="Aviso de privacidade">
       <div className="consent-banner-inner">
         <p className="consent-banner-text">
-          Este site usa medição para entender como as páginas são usadas e para saber o
-          resultado dos anúncios que trazem visitantes até aqui. Nada é coletado antes da
-          sua escolha. Você pode mudar de ideia quando quiser.{" "}
+          Medimos o uso das páginas para melhorar sua experiência no site. Se você chegou
+          por um anúncio, o identificador desse clique também é registrado. Nada é coletado
+          antes da sua escolha. Você pode mudar de ideia quando quiser.{" "}
           <Link href="/privacidade" className="consent-banner-link">
             Política de Privacidade
           </Link>
         </p>
         <div className="consent-banner-actions">
-          <button type="button" className="consent-btn" onClick={() => decide(false)}>
+          <button
+            type="button"
+            className="consent-btn consent-btn-decline"
+            onClick={() => decide(false)}
+          >
             Recusar
           </button>
-          <button type="button" className="consent-btn" onClick={() => decide(true)}>
+          <button
+            type="button"
+            className="consent-btn consent-btn-accept"
+            onClick={() => decide(true)}
+          >
             Aceitar
           </button>
         </div>
