@@ -1,6 +1,10 @@
 import Script from "next/script";
 
-import { CONSENT_STORAGE_KEY } from "@/lib/consent";
+import {
+  CONSENT_STORAGE_KEY,
+  CONSENT_VERSION,
+  GRANTED_CONSENT,
+} from "@/lib/consent";
 
 // Identificador do container, sempre por variável de ambiente.
 // Nunca escrever o ID direto no código — ele muda por ambiente e não deve
@@ -14,9 +18,11 @@ const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
  * do bloqueio e o site coleta sem consentimento — que é exatamente o que a
  * implantação existe para impedir.
  *
- * Só a categoria analytics é negociada no banner. As categorias de anúncio
- * ficam negadas permanentemente nesta versão: não há conta de anúncios
- * conectada, e ligar marketing exigiria oferecer a escolha no banner antes.
+ * Tudo começa negado, inclusive as categorias de anúncio. O banner é que
+ * libera, e libera as quatro de uma vez — decisão DT-2, tomada quando a conta
+ * Google Ads do cliente foi conectada. Antes disso as de anúncio ficavam
+ * negadas para sempre, porque pedir permissão para algo que não acontece é
+ * pior do que não pedir.
  */
 const consentDefaultScript = `
 (function () {
@@ -33,18 +39,27 @@ const consentDefaultScript = `
     security_storage: 'granted',
     wait_for_update: 500
   });
+  // Redige o identificador de clique do anúncio enquanto ad_storage estiver
+  // negado. Não é contraditório com a liberação do banner: a redação vale
+  // exatamente durante o período em que a categoria está negada, e deixa de
+  // valer sozinha quando o update abaixo concede.
   gtag('set', 'ads_data_redaction', true);
   gtag('set', 'url_passthrough', true);
 
   // Quem já decidiu numa visita anterior tem a escolha reaplicada aqui,
   // antes do container carregar. Sem isto, a visualização de página de
   // um visitante que já aceitou seria descartada a cada nova visita.
+  //
+  // A versão é conferida junto: escolha feita sobre um texto antigo não vale
+  // para o texto novo. Sem essa conferência, o banner reapareceria para a
+  // pessoa decidir de novo enquanto o consentimento antigo já teria sido
+  // aplicado — coletar sobre uma permissão que a pessoa não deu ainda.
   try {
     var saved = window.localStorage.getItem('${CONSENT_STORAGE_KEY}');
     if (saved) {
       var choice = JSON.parse(saved);
-      if (choice && choice.analytics === true) {
-        gtag('consent', 'update', { analytics_storage: 'granted' });
+      if (choice && choice.granted === true && choice.version === '${CONSENT_VERSION}') {
+        gtag('consent', 'update', ${JSON.stringify(GRANTED_CONSENT)});
       }
     }
   } catch (error) {

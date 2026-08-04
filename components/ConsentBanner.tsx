@@ -7,6 +7,8 @@ import {
   CONSENT_GRANTED_DATALAYER_EVENT,
   CONSENT_OPEN_EVENT,
   CONSENT_VERSION,
+  DENIED_CONSENT,
+  GRANTED_CONSENT,
   readConsentChoice,
   writeConsentChoice,
 } from "@/lib/consent";
@@ -19,20 +21,19 @@ import {
  * Consent Mode espera o objeto `arguments`, e um array é ignorado em
  * silêncio — falha das mais difíceis de enxergar nessa configuração.
  *
- * Só a categoria analytics muda. As de anúncio continuam negadas — não há
- * conta de anúncios conectada nesta versão, e oferecê-las no banner sem
- * usá-las seria pedir permissão para algo que não acontece.
+ * As quatro categorias mudam juntas, porque o banner oferece uma escolha só.
+ * A lista vem de lib/consent.ts — repetir os nomes das categorias aqui é o
+ * caminho curto para o banner conceder uma coisa e o sinal padrão declarar
+ * outra.
  */
-function updateConsent(analytics: boolean) {
+function updateConsent(granted: boolean) {
   // Sem container instalado (ambiente local sem a variável de ambiente) não
   // há gtag. A escolha continua sendo gravada; só não há o que atualizar.
   if (typeof window.gtag !== "function") return;
 
-  window.gtag("consent", "update", {
-    analytics_storage: analytics ? "granted" : "denied",
-  });
+  window.gtag("consent", "update", granted ? GRANTED_CONSENT : DENIED_CONSENT);
 
-  if (analytics) {
+  if (granted) {
     // Gatilho da configuração de analytics no container. Quem demora para
     // decidir já perdeu a janela de 500ms do sinal padrão — este evento é o
     // que recupera a visualização de página dessa pessoa.
@@ -67,9 +68,9 @@ export default function ConsentBanner() {
     return () => window.removeEventListener(CONSENT_OPEN_EVENT, open);
   }, []);
 
-  const decide = useCallback((analytics: boolean) => {
-    writeConsentChoice(analytics);
-    updateConsent(analytics);
+  const decide = useCallback((granted: boolean) => {
+    writeConsentChoice(granted);
+    updateConsent(granted);
     setVisible(false);
   }, []);
 
@@ -79,9 +80,9 @@ export default function ConsentBanner() {
     <div className="consent-banner" role="region" aria-label="Aviso de privacidade">
       <div className="consent-banner-inner">
         <p className="consent-banner-text">
-          Este site usa medição para entender como as páginas são usadas e melhorar o
-          atendimento. Nada é coletado antes da sua escolha. Você pode mudar de ideia
-          quando quiser.{" "}
+          Este site usa medição para entender como as páginas são usadas e para saber o
+          resultado dos anúncios que trazem visitantes até aqui. Nada é coletado antes da
+          sua escolha. Você pode mudar de ideia quando quiser.{" "}
           <Link href="/privacidade" className="consent-banner-link">
             Política de Privacidade
           </Link>

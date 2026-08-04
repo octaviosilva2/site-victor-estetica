@@ -81,6 +81,10 @@ export default function PrivacyPage() {
             <li>Tipo de aparelho, navegador e idioma.</li>
             <li>Como você chegou até aqui: busca, rede social, link direto ou anúncio.</li>
             <li>
+              Se você veio de um anúncio do Google, o identificador daquele clique — um código
+              que liga a sua visita ao anúncio que a trouxe, sem dizer quem você é.
+            </li>
+            <li>
               Quais botões e cards você clicou: WhatsApp, Instagram, endereço, procedimentos e
               Grupo VIP; e se a seção de resultados foi exibida na sua tela.
             </li>
@@ -102,9 +106,15 @@ export default function PrivacyPage() {
 
           <h2 className="detail-section-title">Para que serve</h2>
           <p className="detail-desc">
-            Para entender quais assuntos interessam a quem visita o site e melhorar as páginas
-            e o atendimento. Os dados são lidos de forma agregada, em números totais. Não há
-            perfil individual, não há decisão automatizada sobre você e não há venda de dados.
+            Para entender quais assuntos interessam a quem visita o site, melhorar as páginas e
+            o atendimento, e medir o resultado dos anúncios que trazem visitantes até aqui. Os
+            relatórios usados são agregados, em números totais. Não há decisão automatizada
+            sobre você e não há venda de dados.
+          </p>
+          <p className="detail-desc">
+            Aceitando, o Google também pode usar esses dados para formar públicos de anúncio —
+            o que permite exibir anúncios deste consultório para quem já visitou o site.
+            Recusando, isso não acontece.
           </p>
 
           <h2 className="detail-section-title">Base legal</h2>
@@ -116,10 +126,10 @@ export default function PrivacyPage() {
 
           <h2 className="detail-section-title">Com quem os dados são compartilhados</h2>
           <p className="detail-desc">
-            Com o Google, que fornece as ferramentas de medição usadas aqui — Google Analytics
-            e Google Tag Manager. O Google atua como operador desses dados e os processa em
-            servidores fora do Brasil, o que caracteriza transferência internacional. Nenhum
-            outro terceiro recebe dados deste site.
+            Com o Google, que fornece as ferramentas usadas aqui — Google Analytics, Google
+            Tag Manager e Google Ads. O Google atua como operador desses dados e os processa
+            em servidores fora do Brasil, o que caracteriza transferência internacional.
+            Nenhum outro terceiro recebe dados deste site.
           </p>
 
           <h2 className="detail-section-title">Por quanto tempo ficam guardados</h2>
