@@ -28,16 +28,29 @@ export const CONSENT_STORAGE_KEY = "vf-consent";
  * 1.1 — decisão DT-2: aceitar passou a liberar também as categorias de
  * anúncio. Quem decidiu sobre a versão 1.0 concordou com um texto que
  * prometia medição e só medição, então essa escolha não vale aqui.
+ *
+ * A retirada de `ad_personalization` do aceite não subiu a versão de
+ * propósito: a 1.1 nunca chegou à produção, então nenhum visitante real
+ * decidiu sobre o texto anterior. Subir para 1.2 registraria um pedido de
+ * reconsentimento que não existiu. A regra continua valendo para qualquer
+ * mudança feita depois da publicação.
  */
 export const CONSENT_VERSION = "1.1";
 
 /**
- * Categorias do Consent Mode liberadas quando o visitante aceita.
+ * O que o aceite do visitante libera, categoria por categoria.
  *
- * As três de anúncio entram por causa da conta Google Ads conectada: com
- * `ad_storage` negado, o identificador de clique do anúncio é redigido e a
- * origem paga chega ao relatório por estimativa, não por identificação. O
- * indicador 6 do escopo depende dessa leitura.
+ * `ad_storage` e `ad_user_data` entram por causa da conta Google Ads
+ * conectada: com elas negadas, o identificador de clique do anúncio é
+ * redigido e a origem paga chega ao relatório por estimativa, não por
+ * identificação. O indicador 6 do escopo depende dessa leitura.
+ *
+ * `ad_personalization` fica **negada mesmo no aceite**, e isso é decisão,
+ * não esquecimento. Ela não serve para medir de onde veio a visita — serve
+ * para montar públicos e voltar a anunciar para quem já esteve no site.
+ * Remarketing não está no escopo contratado, e pedir ao visitante uma
+ * permissão que o projeto não exerce é o mesmo erro que a versão anterior
+ * deste arquivo evitava quando não havia conta de anúncios nenhuma.
  *
  * Este objeto é a fonte única das categorias. O sinal de consentimento e o
  * banner leem daqui — declarar a lista duas vezes é como as duas pontas
@@ -47,7 +60,7 @@ export const GRANTED_CONSENT = {
   analytics_storage: "granted",
   ad_storage: "granted",
   ad_user_data: "granted",
-  ad_personalization: "granted",
+  ad_personalization: "denied",
 } as const;
 
 /** As mesmas categorias, negadas. Usado ao recusar e ao revogar. */

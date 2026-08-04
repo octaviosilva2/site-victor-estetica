@@ -99,6 +99,10 @@ export default function PrivacyPage() {
             </li>
             <li>Conteúdo de conversas — o que você escreve no WhatsApp não passa por aqui.</li>
             <li>Gravação de tela, movimento de mouse ou mapa de cliques.</li>
+            <li>
+              Perfil de interesses para publicidade. Você não passa a ver anúncios deste
+              consultório por ter visitado o site.
+            </li>
           </ul>
           <p className="detail-desc">
             A medição registra que <em>alguém</em> clicou em um botão, não <em>quem</em> clicou.
@@ -112,9 +116,9 @@ export default function PrivacyPage() {
             sobre você e não há venda de dados.
           </p>
           <p className="detail-desc">
-            Aceitando, o Google também pode usar esses dados para formar públicos de anúncio —
-            o que permite exibir anúncios deste consultório para quem já visitou o site.
-            Recusando, isso não acontece.
+            Estes dados <strong>não</strong> são usados para exibir anúncios para você depois.
+            Este site não monta listas de público para republicidade, nem mesmo quando você
+            aceita — a permissão de personalização de anúncios permanece desativada.
           </p>
 
           <h2 className="detail-section-title">Base legal</h2>
