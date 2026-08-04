@@ -55,21 +55,28 @@ export default function ResultsSection() {
         </div>
         <p className="compare-disclaimer fade">RESULTADO INDIVIDUAL · AVALIAÇÃO NECESSÁRIA</p>
 
+        {/* data-track: lido pela medição. Não remover em refatoração. */}
         <a
           className="ig-cta fade"
           href={siteConfig.links.instagram}
           target="_blank"
           rel="noopener noreferrer"
+          data-track="resultados"
         >
           <InstagramIcon />
           Ver mais casos reais no Instagram <b>{siteConfig.links.instagramHandle}</b>
         </a>
 
+        {/* data-track: lido pela medição. Não remover em refatoração.
+            Este link é canal de transmissão (whatsapp.com/channel), não wa.me:
+            é medido como evento próprio e fica fora da taxa de ações
+            importantes. Trocar o destino para wa.me quebraria essa separação. */}
         <a
           className="vip-cta fade"
           href={siteConfig.links.whatsappChannel}
           target="_blank"
           rel="noopener noreferrer"
+          data-track="resultados"
         >
           <WhatsAppIcon />
           <span className="vip-cta-text">

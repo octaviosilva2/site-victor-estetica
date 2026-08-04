@@ -117,11 +117,17 @@ export default function ProcedureDetailBody({
         <div className="eyebrow">Próximo passo</div>
         <SectionHeading>Pronto para agendar sua avaliação?</SectionHeading>
         <p>{procedure.cta}</p>
+        {/* data-track* são lidos pela medição. Não remover em refatoração.
+            Aqui data-track-item carrega o procedimento de origem do contato —
+            é o que permite saber de qual página o agendamento partiu. */}
         <a
           className="btn"
           href={whatsappProcedureUrl(procedure.title)}
           target="_blank"
           rel="noopener noreferrer"
+          data-track="detalhe_procedimento"
+          data-track-cta="agendar"
+          data-track-item={procedure.title}
         >
           Agendar Avaliação
         </a>

@@ -44,8 +44,14 @@ export default function ContactSection() {
               </div>
               <div>
                 <div className="contact-label">WhatsApp</div>
+                {/* data-track: lido pela medição. Não remover em refatoração. */}
                 <div className="contact-value">
-                  <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={whatsappUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-track="contato"
+                  >
                     {phone.display}
                   </a>
                 </div>
@@ -58,8 +64,14 @@ export default function ContactSection() {
               </div>
               <div>
                 <div className="contact-label">Instagram</div>
+                {/* data-track: lido pela medição. Não remover em refatoração. */}
                 <div className="contact-value">
-                  <a href={links.instagram} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={links.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-track="contato"
+                  >
                     {links.instagramHandle}
                   </a>
                 </div>
@@ -67,11 +79,14 @@ export default function ContactSection() {
             </li>
           </ul>
 
+          {/* data-track: lido pela medição (intenção de visita presencial).
+              Não remover em refatoração. */}
           <a
             className="map-link fade"
             href={links.googleBusiness}
             target="_blank"
             rel="noopener noreferrer"
+            data-track="contato"
           >
             📍 Ver endereço no Google Maps
             <br />

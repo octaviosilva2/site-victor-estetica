@@ -46,7 +46,16 @@ export default function HeroSection() {
             ))}
           </div>
           <div className="hero-buttons fade">
-            <a className="btn" href={whatsappUrl()} target="_blank" rel="noopener noreferrer">
+            {/* data-track* são lidos pela medição para saber qual botão de
+                agendamento converteu. Não remover em refatoração. */}
+            <a
+              className="btn"
+              href={whatsappUrl()}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-track="topo"
+              data-track-cta="agendar"
+            >
               Agendar Avaliação
             </a>
             <Link className="btn btn-outline" href="/#procedimentos">

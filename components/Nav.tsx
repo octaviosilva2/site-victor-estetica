@@ -55,11 +55,16 @@ export default function Nav() {
             ☰
           </button>
 
+          {/* data-track* são lidos pela medição para distinguir qual botão
+              foi clicado. Não remover em refatoração: sem eles o relatório
+              de "Agendar Avaliação" por posição para de funcionar. */}
           <a
             className="btn btn-small"
             href={whatsappUrl()}
             target="_blank"
             rel="noopener noreferrer"
+            data-track="menu_superior"
+            data-track-cta="agendar"
           >
             Agendar Avaliação
           </a>
@@ -91,6 +96,9 @@ export default function Nav() {
         </ul>
         <div className="nav-drawer-contact">
           <div className="nav-drawer-phone">{siteConfig.phone.display}</div>
+          {/* data-track: usado pela medição. Não remover — ver comentário acima.
+              Estes dois links contêm só um ícone SVG: o clique acontece no SVG,
+              não no <a>, e a leitura do atributo precisa subir até o link. */}
           <div className="nav-drawer-icons">
             <a
               className="nav-drawer-icon-btn"
@@ -98,6 +106,7 @@ export default function Nav() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Conversar no WhatsApp"
+              data-track="menu_lateral"
             >
               <WhatsAppIcon />
             </a>
@@ -107,6 +116,7 @@ export default function Nav() {
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Perfil no Instagram"
+              data-track="menu_lateral"
             >
               <InstagramIcon />
             </a>

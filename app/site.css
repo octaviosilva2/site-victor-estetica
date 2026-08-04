@@ -705,3 +705,131 @@ input:focus-visible {
   outline: 2px solid var(--forest);
   outline-offset: 3px;
 }
+
+/* ===================================================================
+   CAMADA DE CONSENTIMENTO
+   Bloco acrescentado pela implantação de medição. Só adiciona regras
+   novas — nenhuma regra acima foi alterada. O banner é a única parte
+   visível da instrumentação, e é visível por exigência do protocolo
+   de privacidade, não por escolha de design.
+   =================================================================== */
+
+.consent-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Acima de tudo, inclusive dos overlays de detalhe (50-55), da gaveta
+     do menu (70) e do modal de boas-vindas (80). */
+  z-index: 90;
+  background: var(--forest);
+  color: var(--white);
+  box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.22);
+}
+
+.consent-banner-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.consent-banner-text {
+  margin: 0;
+  flex: 1;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.consent-banner-link {
+  color: var(--white);
+  font-weight: 600;
+  text-decoration: underline;
+  white-space: nowrap;
+}
+
+.consent-banner-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Aceitar e recusar têm exatamente o mesmo estilo. A equivalência visual
+   é requisito de consentimento válido — destacar um dos dois vicia a
+   escolha. Não diferenciar por cor, tamanho ou peso. */
+.consent-btn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: transparent;
+  color: var(--white);
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.consent-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.consent-banner :focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 3px;
+}
+
+@media (max-width: 780px) {
+  .consent-banner-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .consent-banner-actions {
+    justify-content: stretch;
+  }
+
+  .consent-btn {
+    flex: 1;
+  }
+}
+
+/* Link de revisão da escolha — rodapé e página de política */
+.consent-prefs-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--forest);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Linha de links legais no rodapé */
+.footer-links {
+  margin-top: 10px;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+}
+
+.footer-links a {
+  color: var(--forest);
+  font-weight: 600;
+}
+
+.footer-links .footer-links-sep {
+  color: var(--line);
+  opacity: 0.9;
+}

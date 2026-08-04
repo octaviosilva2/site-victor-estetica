@@ -53,12 +53,18 @@ export default function CategoryExplorer() {
 
   return (
     <>
+      {/* data-track-item* são lidos pela medição. Não remover em refatoração.
+          O tipo é obrigatório porque "Estética Regenerativa" é nome de área E
+          de procedimento — sem ele os dois colapsam numa linha só no
+          relatório. */}
       <div id="category-list">
         {categoriesWithSlug.map((item) => (
           <Link
             className="category-card fade"
             href={routes.category(item.slug)}
             key={item.slug}
+            data-track-item={item.name}
+            data-track-item-type="area"
             onClick={(event) => {
               event.preventDefault();
               openCategory(item.slug);

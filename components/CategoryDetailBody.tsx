@@ -46,6 +46,9 @@ export default function CategoryDetailBody({
       </div>
 
       <SectionHeading className="detail-section-title">Procedimentos incluídos</SectionHeading>
+      {/* data-track-item* são lidos pela medição. Não remover em refatoração.
+          O tipo separa este card do card de área de mesmo nome ("Estética
+          Regenerativa"), que sem ele viraria uma linha só no relatório. */}
       <div className="cat-proc-grid">
         {category.procedures.map((title) => {
           const procedure = getProcedureByTitle(title);
@@ -56,6 +59,8 @@ export default function CategoryDetailBody({
               className="cat-proc-card"
               href={routes.procedure(procedure.slug)}
               key={procedure.slug}
+              data-track-item={title}
+              data-track-item-type="procedimento"
               onClick={
                 onProcedureSelect
                   ? (event) => {
