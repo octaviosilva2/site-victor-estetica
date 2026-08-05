@@ -29,13 +29,19 @@ import ConsentPreferencesLink from "@/components/ConsentPreferencesLink";
  * subiu de 1.1 porque nada aqui mudou o tratamento: mudou o detalhamento, e
  * a 1.1 nunca chegou à produção. Ver a nota em lib/consent.ts.
  *
+ * A seção "Cookies e armazenamento no navegador" foi escrita em 2026-08-05 a
+ * partir dos cookies realmente observados no navegador durante os testes, não
+ * de memória nem de documentação do Google — nomes e durações vieram de
+ * cookieStore.getAll() com o container em pré-visualização. Ver EV-24 em
+ * 13-evidencias.md. Se a instrumentação passar a usar outra ferramenta, esta
+ * lista precisa ser reconferida no navegador antes de ser alterada.
+ *
+ * CONSENT_VERSION não subiu por causa dela: a seção detalha um tratamento que
+ * já existia e já estava declarado, não introduz tratamento novo. Mesma regra
+ * aplicada na expansão de P3.
+ *
  * TODO: trocar o canal de contato pelo e-mail do encarregado, quando o
  * cliente definir um. Hoje o único canal confirmado é o WhatsApp.
- *
- * TODO: acrescentar a subseção "Cookies e armazenamento no navegador" com os
- * cookies do Google nomeados e sua duração, depois de observá-los no
- * navegador durante o Bloco 2 dos testes. Não escrever de memória — a regra
- * de 13-evidencias.md vale para o que a política afirma.
  */
 export const metadata: Metadata = {
   title: "Política de Privacidade",
@@ -212,6 +218,40 @@ export default function PrivacyPage() {
             Os dados de navegação são retidos por 14 meses e depois excluídos automaticamente
             pela ferramenta de medição. Relatórios agregados, que não identificam ninguém,
             podem ser mantidos por mais tempo.
+          </p>
+
+          <h2 className="detail-section-title">Cookies e armazenamento no navegador</h2>
+          <p className="detail-desc">
+            Depois que você aceita, as ferramentas do Google gravam três cookies no seu
+            navegador. Nenhum deles guarda nome, telefone ou e-mail: servem para o site
+            reconhecer que é o mesmo navegador voltando, sem saber quem você é.
+          </p>
+          <ul className="benefit-list">
+            <li>
+              <strong>_ga</strong> — 400 dias. Distingue um navegador de outro, para que duas
+              visitas suas não sejam contadas como duas pessoas diferentes.
+            </li>
+            <li>
+              <strong>_ga_KG4DXCRNNS</strong> — 400 dias. Guarda o andamento da visita atual
+              nesta medição específica: quando começou e quantas páginas foram abertas.
+            </li>
+            <li>
+              <strong>_gcl_au</strong> — 90 dias. É do Google Ads. Nele fica o identificador do
+              clique do anúncio, quando a visita chega por um; ele é criado mesmo quando não há
+              anúncio nenhum envolvido, e nesse caso não carrega identificador de clique.
+            </li>
+          </ul>
+          <p className="detail-desc">
+            Enquanto você não responde ao aviso, essas ferramentas ficam bloqueadas e não
+            gravam nada. Recusando, seguem bloqueadas. Se você aceitar e depois revogar, a
+            medição para imediatamente, e os cookies já gravados podem ser apagados por você a
+            qualquer momento pelas configurações do navegador.
+          </p>
+          <p className="detail-desc">
+            Além desses, o site guarda a sua própria resposta ao aviso num espaço do navegador
+            chamado armazenamento local, sob o nome <strong>vf-consent</strong>. Ele não é
+            enviado a lugar nenhum, não é um cookie e permanece até você apagá-lo — é o que
+            evita que o aviso reapareça a cada página aberta.
           </p>
 
           <h2 className="detail-section-title">Segurança da informação</h2>
