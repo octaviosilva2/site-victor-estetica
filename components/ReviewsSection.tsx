@@ -1,20 +1,16 @@
 import { siteConfig } from "@/lib/siteConfig";
 
-// Conteúdo de exemplo até a integração com o Google Places API (ou um plugin
-// tipo Elfsight/Trustindex) puxar as avaliações reais do perfil.
-const sampleReviews = [
-  {
-    text: "Exemplo de avaliação real puxada do Google — texto e nota vêm direto do seu perfil.",
-    name: "Paciente Exemplo",
-  },
-  {
-    text: "Exemplo de avaliação real puxada do Google — texto e nota vêm direto do seu perfil.",
-    name: "Paciente Exemplo",
-  },
-  {
-    text: "Exemplo de avaliação real puxada do Google — texto e nota vêm direto do seu perfil.",
-    name: "Paciente Exemplo",
-  },
+// Avaliações reais do perfil do Google, transcritas na íntegra em 2026-08-05.
+//
+// NÃO há integração automática: avaliação nova que entrar no perfil não
+// aparece aqui sozinha. Para atualizar, edite esta lista à mão.
+//
+// Publicadas sem o nome de quem avaliou, por decisão do cliente. Por isso o
+// card não tem mais a linha de assinatura.
+const googleReviews = [
+  "Fiz uma rinomodelação com ele e amei o resultado! Superou minhas expectativas. É um profissional muito atencioso, cuidadoso e competente. Durante todo o processo e também no pós, sempre responde minhas dúvidas com rapidez e dá todo o suporte necessário. Recomendo muito! Olha esse antes e depois 😍",
+  "Excelente profissional. O Victor é muito atencioso, explica tudo com clareza e passa bastante segurança no atendimento. O resultado ficou super natural e do jeito que eu queria. Recomendo muito!",
+  "Amei minha experiência! 🥰 O preenchimento labial ficou super natural, exatamente como eu queria, e o botox também ficou maravilhoso, super recomendo o Victor e a clínica Gaya pelo atendimento e atenção com seus clientes",
 ];
 
 export default function ReviewsSection() {
@@ -27,18 +23,16 @@ export default function ReviewsSection() {
         <p className="eyebrow fade">Avaliações</p>
         <h2 className="section-title fade">O que dizem no Google</h2>
         <p className="section-sub fade">
-          Avaliações carregadas automaticamente do perfil no Google (exemplo de layout — conteúdo
-          real vem da integração).
+          Avaliações publicadas por pacientes no perfil do Google, transcritas na íntegra.
         </p>
 
         <div className="review-grid">
-          {sampleReviews.map((review, index) => (
+          {googleReviews.map((text, index) => (
             <div className="review-card fade" key={index}>
               <div className="review-stars" aria-label="5 de 5 estrelas">
                 ★★★★★
               </div>
-              <div className="review-text">&ldquo;{review.text}&rdquo;</div>
-              <div className="review-name">{review.name}</div>
+              <div className="review-text">&ldquo;{text}&rdquo;</div>
               <div className="review-badge">Avaliação do Google</div>
             </div>
           ))}

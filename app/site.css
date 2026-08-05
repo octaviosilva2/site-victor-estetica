@@ -471,13 +471,18 @@
     position:relative;aspect-ratio:4/5;border-radius:8px;overflow:hidden;
     background:var(--bg-alt);user-select:none;-webkit-user-select:none;
   }
-  .compare-before,.compare-after{
-    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-    font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--white);
-    font-weight:700;
+  .compare-before,.compare-after{position:absolute;inset:0;background:var(--bg-alt);}
+  /* Recorte, não largura: mudar a largura espremeria a foto durante o arraste.
+     Ver o comentário em components/CompareCard.tsx. */
+  .compare-after{clip-path:inset(0 50% 0 0);}
+  .compare-img{object-fit:cover;pointer-events:none;}
+  .compare-tag{
+    position:absolute;bottom:9px;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--white);font-weight:700;
+    background:rgba(33,36,30,.55);padding:4px 8px;border-radius:4px;
   }
-  .compare-before{background:linear-gradient(160deg,#8a9482,#4B5A45);}
-  .compare-after{background:linear-gradient(160deg,#4B5A45,#2c3527);overflow:hidden;width:50%;}
+  .compare-tag-before{right:9px;}
+  .compare-tag-after{left:9px;}
   .compare-handle{
     position:absolute;top:0;bottom:0;left:50%;width:0;
     transform:translateX(-50%);cursor:ew-resize;touch-action:none;

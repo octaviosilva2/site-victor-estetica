@@ -6,14 +6,19 @@ import { siteConfig } from "@/lib/siteConfig";
 import { WhatsAppIcon, InstagramIcon } from "@/components/icons";
 import CompareCard from "@/components/CompareCard";
 
-// Casos exibidos no carrossel. As fotos reais ainda não foram liberadas —
-// ficam no backup do site antigo até o Victor aprovar o uso no site novo.
+// Casos exibidos no carrossel. Fotos reais de pacientes, com uso autorizado
+// por cada um — confirmado pelo Victor em 2026-08-05.
+//
+// TODO — o rótulo de cada caso ainda é genérico porque o procedimento de cada
+// um não foi confirmado. Nomear o procedimento errado num antes e depois de
+// paciente é erro grave num site de profissional de saúde, então o texto fica
+// neutro até a confirmação chegar. Trocar apenas o campo `label`.
 const compareCases = [
-  "Toxina Botulínica — exemplo (foto real a definir)",
-  "Bioestimulador de Colágeno — exemplo (foto real a definir)",
-  "Preenchimento Labial — exemplo (foto real a definir)",
-  "Reestruturação Facial — exemplo (foto real a definir)",
-  "Rinomodelação — exemplo (foto real a definir)",
+  { id: "caso-1", label: "Antes e depois" },
+  { id: "caso-2", label: "Antes e depois" },
+  { id: "caso-3", label: "Antes e depois" },
+  { id: "caso-4", label: "Antes e depois" },
+  { id: "caso-5", label: "Antes e depois" },
 ];
 
 export default function ResultsSection() {
@@ -45,8 +50,14 @@ export default function ResultsSection() {
             ←
           </button>
           <div className="compare-track" ref={trackRef}>
-            {compareCases.map((label) => (
-              <CompareCard label={label} key={label} />
+            {compareCases.map((item, index) => (
+              <CompareCard
+                key={item.id}
+                label={item.label}
+                before={`/images/resultados/${item.id}-antes.jpg`}
+                after={`/images/resultados/${item.id}-depois.jpg`}
+                alt={`Resultado de paciente, caso ${index + 1}`}
+              />
             ))}
           </div>
           <button className="compare-nav next" onClick={() => scroll(1)} aria-label="Próximo">
