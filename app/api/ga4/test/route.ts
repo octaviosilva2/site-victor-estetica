@@ -49,6 +49,35 @@ export async function GET(request: Request) {
     );
   }
 
+  // ?debug=token devolve as claims do token da Vercel, sem validá-lo. Serve
+  // para comparar o `aud` real com o que o provedor do Google espera — é a
+  // diferença entre corrigir a causa e adivinhar qual dos dois lados ajustar.
+  // Nunca devolve o token em si.
+  if (new URL(request.url).searchParams.get("debug") === "token") {
+    try {
+      const token = await getVercelOidcToken();
+      const corpo = JSON.parse(
+        Buffer.from(token.split(".")[1], "base64").toString("utf8"),
+      );
+      return Response.json({
+        ok: true,
+        etapa: "claims-do-token",
+        iss: corpo.iss,
+        aud: corpo.aud,
+        sub: corpo.sub,
+      });
+    } catch (erro) {
+      return Response.json(
+        {
+          ok: false,
+          etapa: "leitura-do-token",
+          erro: erro instanceof Error ? erro.message : String(erro),
+        },
+        { status: 500 },
+      );
+    }
+  }
+
   try {
     const authClient = ExternalAccountClient.fromJSON({
       type: "external_account",
