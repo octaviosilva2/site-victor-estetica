@@ -53,9 +53,21 @@ export async function GET(request: Request) {
   // para comparar o `aud` real com o que o provedor do Google espera — é a
   // diferença entre corrigir a causa e adivinhar qual dos dois lados ajustar.
   // Nunca devolve o token em si.
+  // O provedor no Google ficou com "audience padrão", que é o nome do recurso
+  // do provedor em https://. O token que a Vercel emite por padrão traz
+  // https://vercel.com/<equipe>, e os dois nunca batem. Em vez de afrouxar o
+  // provedor para aceitar o audience de equipe, pedimos à Vercel um token com
+  // o audience do provedor — é o que o Google recomenda, porque um token
+  // preso a um provedor não serve para nenhum outro.
+  //
+  // Repare que este valor começa com https:// enquanto o `audience` entregue
+  // ao cliente logo abaixo começa com //. São mesmo dois formatos diferentes
+  // para o mesmo recurso, não é engano de digitação.
+  const audienceDoProvedor = `https://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${poolId}/providers/${providerId}`;
+
   if (new URL(request.url).searchParams.get("debug") === "token") {
     try {
-      const token = await getVercelOidcToken();
+      const token = await getVercelOidcToken({ audience: audienceDoProvedor });
       const corpo = JSON.parse(
         Buffer.from(token.split(".")[1], "base64").toString("utf8"),
       );
@@ -93,8 +105,9 @@ export async function GET(request: Request) {
       subject_token_supplier: {
         // Em função da Vercel o token vem no cabeçalho x-vercel-oidc-token da
         // request; em build, na variável VERCEL_OIDC_TOKEN. A biblioteca
-        // resolve os dois casos.
-        getSubjectToken: getVercelOidcToken,
+        // resolve os dois casos. O audience precisa ser pedido explicitamente
+        // — ver o comentário acima.
+        getSubjectToken: () => getVercelOidcToken({ audience: audienceDoProvedor }),
       },
     });
 
