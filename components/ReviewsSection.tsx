@@ -44,8 +44,18 @@ export default function ReviewsSection() {
           ))}
         </div>
 
+        {/* data-track: lido pela medição. Não remover em refatoração.
+            Este link vai para o mesmo endereço do Google Maps que o botão da
+            seção de contato, e por isso cai na mesma tag de endereço. Sem o
+            atributo, o evento chegava sem posição e virava "(not set)" no
+            relatório — achado E0.5, corrigido em 2026-08-05. */}
         <p className="review-note fade">
-          <a href={siteConfig.links.googleBusiness} target="_blank" rel="noopener noreferrer">
+          <a
+            href={siteConfig.links.googleBusiness}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-track="avaliacoes"
+          >
             Ver todas as avaliações no perfil do Google
           </a>
         </p>

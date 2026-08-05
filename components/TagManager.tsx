@@ -44,7 +44,13 @@ const consentDefaultScript = `
   // exatamente durante o período em que a categoria está negada, e deixa de
   // valer sozinha quando o update abaixo concede.
   gtag('set', 'ads_data_redaction', true);
-  gtag('set', 'url_passthrough', true);
+  // url_passthrough fica DESLIGADO de propósito, e o padrão do Google já é
+  // esse. Ligado, ele cola um parâmetro _gl nos links internos quando o
+  // armazenamento está negado, para manter continuidade entre páginas sem
+  // cookie. Como aqui a recusa significa não medir coisa alguma, não há
+  // continuidade a preservar — sobrava só um parâmetro estranho na barra de
+  // endereço de quem recusou. Observado em produção e retirado em 2026-08-05
+  // (achado E0.6).
 
   // Quem já decidiu numa visita anterior tem a escolha reaplicada aqui,
   // antes do container carregar. Sem isto, a visualização de página de
