@@ -169,8 +169,8 @@ export const procedures: Procedure[] = [
   },
   {
     title: "Estética Regenerativa",
-    short: "Protocolos regenerativos (bioestimuladores, peptídeos de cobre, PDRN e peptídeos bioativos) para renovação progressiva.",
-    detail: "Combina ativos regenerativos — bioestimuladores, peptídeos de cobre, PDRN e outros peptídeos bioativos — que atuam na sinalização celular, estimulando fibroblastos e a regeneração natural da pele. O conceito por trás desses ativos é sinalizar para a própria célula que ela deve se regenerar, em vez de apenas preencher ou remover uma camada da pele. Por isso, costuma ser usada tanto isoladamente quanto associada a outros procedimentos, como parte de um protocolo de manutenção contínuo.",
+    short: "Protocolos regenerativos com ativos bioestimuladores para renovação progressiva da pele.",
+    detail: "Combina ativos regenerativos de ação bioestimuladora, que atuam na sinalização celular, estimulando fibroblastos e a regeneração natural da pele. O conceito por trás desses ativos é sinalizar para a própria célula que ela deve se regenerar, em vez de apenas preencher ou remover uma camada da pele. Por isso, costuma ser usada tanto isoladamente quanto associada a outros procedimentos, como parte de um protocolo de manutenção contínuo.",
     duracao: "Resultado progressivo, sustentado com protocolo contínuo",
     indicado: "Qualidade geral da pele, prevenção do envelhecimento, manutenção pós-procedimento",
     sessoes: "3 a 4 sessões, intervalo de 2 a 4 semanas",
@@ -178,7 +178,7 @@ export const procedures: Procedure[] = [
     beneficios: ["Base científica consolidada em alguns ativos (décadas de estudo)", "Atua na regeneração, não só na superfície", "Pode ser combinada com outros procedimentos", "Baixo tempo de recuperação"],
     passos: [["Avaliação", "Análise da qualidade da pele e definição de quais ativos fazem sentido para o caso."], ["Preparo da pele", "Limpeza da área e, se necessário, anestesia tópica."], ["Aplicação dos ativos", "Aplicação combinada dos ativos regenerativos definidos no planejamento."], ["Finalização", "Orientações de cuidados e continuidade do protocolo."]],
     posCare: ["Seguir o protocolo de sessões combinado", "Evitar exposição solar direta nos dias seguintes", "Manter boa hidratação", "Evitar produtos irritantes na pele nas primeiras 24h"],
-    faq: [["É a mesma coisa que PRP?", "Não — este protocolo usa bioestimuladores e peptídeos como peptídeos de cobre e PDRN; não inclui PRP."], ["Em quanto tempo aparece resultado?", "Estudos com esses ativos mostram resposta documentada em 30 a 60 dias de protocolo consistente."]],
+    faq: [["Esse protocolo substitui outros tratamentos regenerativos?", "Não — é uma combinação diferente de ativos bioestimuladores, que pode ser usada isoladamente ou associada a outros procedimentos."], ["Em quanto tempo aparece resultado?", "Estudos com esses ativos mostram resposta documentada em 30 a 60 dias de protocolo consistente."]],
     cta: "Entre em contato com o Dr. Victor e descubra se a estética regenerativa é o tratamento ideal para você.",
   },
   {
@@ -223,7 +223,7 @@ export const categories: Category[] = [
   {
     name: "Estética Regenerativa",
     short: "Protocolos que estimulam a regeneração natural da pele, com ativos e tecnologias de base científica.",
-    objetivo: "Estimular a capacidade natural de regeneração da pele e dos tecidos — com bioestimuladores, peptídeos de cobre, PDRN, laser e microagulhamento — em vez de só corrigir um sinal isolado.",
+    objetivo: "Estimular a capacidade natural de regeneração da pele e dos tecidos — com ativos bioestimuladores, laser e microagulhamento — em vez de só corrigir um sinal isolado.",
     escolhaSe: "sua queixa é sobre a qualidade da pele em si (textura, firmeza, viço) — não sobre a estrutura do rosto.",
     queixas: "Perda de firmeza, textura irregular, sinais de envelhecimento, recuperação pós-procedimento.",
     indicado: "Quem busca resultado progressivo e mais duradouro, com base em ativos e tecnologias com respaldo científico.",
