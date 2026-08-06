@@ -20,12 +20,19 @@ const HOST_PAINEL = "dados.victorfolster.com.br";
 const HOSTS_SITE = ["victorfolster.com.br", "www.victorfolster.com.br"];
 
 /**
- * Caminho que não existe na aplicação.
+ * Rota que produz um 404 **do site**, com menu, rodapé e banner.
  *
- * Reescrever para ele faz o Next responder com a página 404 e o status 404 sem
- * precisar de rota dedicada. Usado para esconder o painel do domínio do site.
+ * Usada para esconder o painel do domínio do site. Ela existe de verdade e
+ * chama `notFound()`; não basta reescrever para um caminho inventado.
+ *
+ * Medido em produção em 2026-08-06: reescrever `/painel` para `/404`, que não
+ * é rota nenhuma, devolvia o corpo certo com **status 200**. Em
+ * desenvolvimento o mesmo código devolvia 404 — a hospedagem resolve o caminho
+ * reescrito como página pré-renderizada e responde 200. O resultado é um "soft
+ * 404": o buscador lê a página de erro como página válida, e o `robots.txt` do
+ * site permite rastrear tudo.
  */
-const CAMINHO_INEXISTENTE = "/404";
+const CAMINHO_404_DO_SITE = "/nao-encontrado";
 
 /**
  * Rota do painel que só existe para produzir um 404 **dentro do layout do
@@ -124,7 +131,7 @@ export function middleware(req: NextRequest) {
     // for acrescentado só aqui ou só lá, um dos dois endereços passa a responder
     // o que não devia, e nada acusa.
     if (ehCaminhoDoPainel(pathname)) {
-      return NextResponse.rewrite(new URL(CAMINHO_INEXISTENTE, req.url));
+      return NextResponse.rewrite(new URL(CAMINHO_404_DO_SITE, req.url));
     }
     return NextResponse.next();
   }
