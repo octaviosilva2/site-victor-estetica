@@ -49,25 +49,31 @@ export async function GET(request: Request) {
     );
   }
 
-  // ?debug=token devolve as claims do token da Vercel, sem validá-lo. Serve
-  // para comparar o `aud` real com o que o provedor do Google espera — é a
-  // diferença entre corrigir a causa e adivinhar qual dos dois lados ajustar.
-  // Nunca devolve o token em si.
-  // O provedor no Google ficou com "audience padrão", que é o nome do recurso
-  // do provedor em https://. O token que a Vercel emite por padrão traz
-  // https://vercel.com/<equipe>, e os dois nunca batem. Em vez de afrouxar o
-  // provedor para aceitar o audience de equipe, pedimos à Vercel um token com
-  // o audience do provedor — é o que o Google recomenda, porque um token
-  // preso a um provedor não serve para nenhum outro.
+  // O provedor no Google está em "Allowed audiences" com UM valor declarado:
+  //   https://vercel.com/octaviosilva2s-projects
+  // que é exatamente o `aud` que a Vercel emite sozinha no modo de equipe.
+  // Portanto o token nativo já serve, e pedir `{ audience }` só atrapalha:
+  // informar esse parâmetro faz a biblioteca TROCAR o token por outro com
+  // audience diferente, que o provedor então recusa com
+  // "The audience in ID Token does not match the expected audience".
   //
-  // Repare que este valor começa com https:// enquanto o `audience` entregue
-  // ao cliente logo abaixo começa com //. São mesmo dois formatos diferentes
-  // para o mesmo recurso, não é engano de digitação.
-  const audienceDoProvedor = `https://iam.googleapis.com/projects/${projectNumber}/locations/global/workloadIdentityPools/${poolId}/providers/${providerId}`;
+  // Foi essa a causa do bloqueio de 2026-08-05. Não reintroduzir o parâmetro
+  // sem antes conferir a lista de audiences aceitas do lado do Google.
+  const audienceForcado = new URL(request.url).searchParams.get("aud");
 
+  // `skipCache` só é aceito junto de `audience` — sem troca não há cache de
+  // troca para ignorar. Daí os dois caminhos separados em vez de um objeto só.
+  const pedirToken = () =>
+    audienceForcado
+      ? getVercelOidcToken({ audience: audienceForcado, skipCache: true })
+      : getVercelOidcToken();
+
+  // ?debug=token devolve as claims do token da Vercel, sem validá-lo, e
+  // ?aud=<valor> força uma troca para testar outro audience sem gastar um
+  // deploy por hipótese. Nunca devolve o token em si.
   if (new URL(request.url).searchParams.get("debug") === "token") {
     try {
-      const token = await getVercelOidcToken({ audience: audienceDoProvedor });
+      const token = await pedirToken();
       const corpo = JSON.parse(
         Buffer.from(token.split(".")[1], "base64").toString("utf8"),
       );
@@ -77,6 +83,7 @@ export async function GET(request: Request) {
         iss: corpo.iss,
         aud: corpo.aud,
         sub: corpo.sub,
+        audienceForcado: audienceForcado ?? "(nenhum — token nativo da Vercel)",
       });
     } catch (erro) {
       return Response.json(
@@ -105,9 +112,10 @@ export async function GET(request: Request) {
       subject_token_supplier: {
         // Em função da Vercel o token vem no cabeçalho x-vercel-oidc-token da
         // request; em build, na variável VERCEL_OIDC_TOKEN. A biblioteca
-        // resolve os dois casos. O audience precisa ser pedido explicitamente
-        // — ver o comentário acima.
-        getSubjectToken: () => getVercelOidcToken({ audience: audienceDoProvedor }),
+        // resolve os dois casos. Sem argumento, o token chega com o audience
+        // nativo da equipe — que é o declarado no provedor. Ver o comentário
+        // do `audienceForcado` acima antes de mudar isto.
+        getSubjectToken: pedirToken,
       },
     });
 
