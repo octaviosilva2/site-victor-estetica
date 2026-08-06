@@ -100,8 +100,14 @@ async function consultar(req: Omit<Requisicao, "property">): Promise<Linha[]> {
  * erro nenhum em lugar nenhum. O cliente lê "28 dias" e vê os 28 dias
  * anteriores.
  *
- * Aqui a dimensão é pedida e lida pelo nome, no cabeçalho da resposta. A ordem
- * das linhas deixa de importar.
+ * Aqui a coluna é lida pelo nome, no cabeçalho da resposta. A ordem das linhas
+ * deixa de importar.
+ *
+ * **`dateRange` se lê, não se pede.** Listá-la em `dimensions` devolve
+ * `INVALID_ARGUMENT: Field dateRange is not a dimension` e derruba a página
+ * inteira. Ela entra sozinha no cabeçalho quando há mais de um intervalo, e é
+ * de lá que sai o índice. Medido em produção em 2026-08-06, consultas A1 e A2
+ * de EV-32.
  */
 async function duasJanelas(
   periodo: Periodo,
@@ -113,7 +119,6 @@ async function duasJanelas(
       { startDate: periodo.inicio, endDate: periodo.fim },
       { startDate: periodo.inicioAnterior, endDate: periodo.fimAnterior },
     ],
-    dimensions: [{ name: DIMENSAO_INTERVALO }, ...(req.dimensions ?? [])],
   });
 
   // A posição da coluna vem do cabeçalho, não de uma suposição sobre onde a
