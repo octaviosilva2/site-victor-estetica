@@ -44,8 +44,10 @@ está desligando**.
 - **Conteúdo:** 13 procedimentos e 5 áreas de atuação, todos em
   `lib/siteData.ts`. Links, telefone e endereço em `lib/siteConfig.ts`, que é
   fonte única — não duplique esses valores em componente nenhum.
-- **Painel do cliente:** `dados.victorfolster.com.br`, alimentado pelo Google
-  Analytics 4 `G-KG4DXCRNNS` via container Google Tag Manager `GTM-TM72FQ3X`.
+- **Painel do cliente:** `dados.victorfolster.com.br`. Desde 2026-08-06 é uma
+  **aplicação própria dentro deste mesmo repositório** — não é ferramenta de
+  terceiro embutida. Lê o Google Analytics 4 `G-KG4DXCRNNS`, alimentado pelo
+  container Google Tag Manager `GTM-TM72FQ3X`. Ver a seção 12.
 
 ---
 
@@ -62,9 +64,14 @@ de cada linha.
 | `lib/consent.ts` | Chave de armazenamento, versão do texto, categorias liberadas e negadas. `ad_personalization` fica **negada mesmo no aceite**, e isso é decisão, não esquecimento |
 | `app/privacidade/page.tsx` | A política, com 14 seções, aprovada pelo cliente em 2026-08-05. Descreve exatamente o que a instrumentação coleta. Mudar a coleta sem mudar esta página cria divergência entre o que é feito e o que é declarado |
 
-Também não mexer sem consultar: `app/layout.tsx` nas linhas que montam
+Também não mexer sem consultar: `app/(site)/layout.tsx` nas linhas que montam
 `<TagManager />` e `<ConsentBanner />`, e o bloco de CSS do banner no fim de
 `app/site.css`.
+
+> **Atenção a uma mudança de lugar.** Até 2026-08-05 esses dois componentes
+> moravam em `app/layout.tsx`. Eles foram para `app/(site)/layout.tsx` para que
+> a medição pare no site e não alcance o painel do cliente, que nasce debaixo do
+> layout raiz. **Não os devolva para a raiz** — ver a seção 12.
 
 ---
 
@@ -334,7 +341,77 @@ Custou uma rodada inteira de diagnóstico em 2026-08-05.
 
 ---
 
-## 12. Checklist antes de dar push
+## 12. O painel do cliente vive aqui dentro
+
+Desde 2026-08-06 este repositório serve **dois produtos**. O mesmo build, o
+mesmo deploy, dois endereços:
+
+```
+www.victorfolster.com.br    →  o site. Público, estático, indexável, medido
+dados.victorfolster.com.br  →  o painel. Autenticado, dinâmico, oculto, sem medição
+```
+
+Quem escolhe é `middleware.ts`, por hostname. **O DNS aponta o servidor; ele não
+escolhe a página.** Sem o middleware, o subdomínio serve o site institucional
+inteiro — foi o estado real entre 05 e 06 de agosto.
+
+### A regra que explica todo o resto
+
+**A medição para no site. O painel não carrega tag nenhuma.**
+
+Se o container de tags subir junto com o painel, cada vez que o Victor abrir o
+relatório o Analytics dele registra uma visita. Os números do painel passam a
+incluir quem os lê, e a distorção é maior justamente quando ele acompanha de
+perto. Por isso:
+
+| Arquivo | O que monta |
+|---|---|
+| `app/layout.tsx` | Só `<html>`, `<body>`, fontes e metadados. Comum aos dois |
+| `app/(site)/layout.tsx` | `TagManager`, `JsonLd`, `ConsentBanner`. **Só o site** |
+| `app/(painel)/layout.tsx` | O casco do painel e o `noindex`. **Nenhuma tag** |
+
+`(site)` e `(painel)` são route groups: não aparecem em URL nenhuma, e nenhum
+endereço do site mudou por causa deles.
+
+### Os cinco pontos que quebram o painel sem erro nenhum
+
+| O que | Onde | O que acontece se mexer |
+|---|---|---|
+| Ler o hostname pelo cabeçalho da requisição | `hostnameDaRequisicao()` em `middleware.ts` | `req.nextUrl.hostname` responde `localhost` em desenvolvimento **e todo o roteamento vira letra morta, em silêncio**. Já aconteceu em 06/08 |
+| `getVercelOidcToken()` **sem argumento** | `lib/ga4.ts` | Informar `{ audience }` troca o token, e o provedor do Google recusa. Custou um dia inteiro em 05/08 |
+| Os nomes das 5 dimensões | `DIMENSAO` em `lib/ga4.ts` | Nome errado não dá erro: a consulta responde com sucesso e a coluna vem **vazia**. Descoberto meses depois |
+| O `overrides` de `google-auth-library` | `package.json` | Sem ele há duas cópias da biblioteca, com tipos diferentes para a mesma classe, e o build quebra |
+| `exigirAcesso()` como primeira linha da página | `lib/painel/sessao.ts` | É a trava real de acesso. Página nova do painel sem essa chamada expõe dado do cliente |
+
+### Regras do painel que vêm de contrato, não de gosto
+
+Estão em `08-matriz-do-dashboard.md` e `06-plano-de-medicao.md`. Mudar qualquer
+uma é mudança de escopo:
+
+1. **Ação importante e sinal de contexto nunca se somam.** WhatsApp é a ação.
+   Instagram, endereço e Grupo VIP são contexto. A cor codifica isso: verde
+   escuro `#4B5A45` para ação, verde claro `#7C8A76` para contexto.
+2. **Todo cartão que pode ser mal lido carrega uma linha dizendo o que ele NÃO
+   significa.** Por isso a propriedade `limite` de `Cartao` é obrigatória —
+   esquecer virou erro de compilação.
+3. **Vocabulário travado.** "Cliques para o Grupo VIP", nunca "entradas no
+   grupo". "Cliques por procedimento", nunca "páginas mais vistas". "Região
+   aproximada", nunca "localização". "Ação importante", nunca "conversão".
+4. **Aviso de consentimento na primeira página** e **aviso de frescor no
+   rodapé** de todas.
+5. **O bloco do Google Ads aparece mesmo sem dado**, com "aguardando
+   veiculação". Nunca esconder, nunca preencher com estimativa.
+6. **12 indicadores em 3 páginas.** Um indicador a mais é aditivo de escopo.
+
+### Um erro no painel derruba o site
+
+É a consequência mais séria do aditivo A1, e foi aceita por escrito. Site e
+painel compartilham build e deploy: **`npm run build` antes de todo push**, sem
+exceção.
+
+---
+
+## 13. Checklist antes de dar push
 
 - [ ] `npm run build` passa
 - [ ] Se toquei em algum dos 10 componentes da seção 4: os atributos continuam
@@ -345,6 +422,10 @@ Custou uma rodada inteira de diagnóstico em 2026-08-05.
 - [ ] Se mexi em banner, política ou consentimento: decidi sobre
       `CONSENT_VERSION` conscientemente? (seção 8)
 - [ ] Se mexi em qualquer arquivo da seção 3: **falei com o Octavio?**
+- [ ] Se criei página nova no painel: ela chama `exigirAcesso()` na primeira
+      linha? (seção 12)
+- [ ] Se mexi no painel: nenhum rótulo usa termo vedado, e todo cartão novo tem
+      a linha do que ele não significa?
 
 ### Comando de conferência
 
@@ -376,7 +457,7 @@ porque a próxima pessoa vai achar que quebrou algo e sair procurando.
 
 ---
 
-## 13. Onde fica o resto
+## 14. Onde fica o resto
 
 O kit de implantação completo está em
 `Desktop/CLAUDE/projetos/implantaçãodadosvictor/implantacao/`, documentos 00 a
@@ -386,7 +467,8 @@ Os que importam para quem mexe no site:
 
 | Documento | Quando consultar |
 |---|---|
-| `05-escopo-contratado.md` | **Fonte de verdade do escopo.** Item que não está lá não se implementa; vira aditivo |
+| `05-escopo-contratado.md` | **Fonte de verdade do escopo.** Item que não está lá não se implementa; vira aditivo. A seção 12 é o aditivo A1, que trouxe o painel para cá |
+| `08-matriz-do-dashboard.md` | Os 12 indicadores, com o cálculo e a limitação declarada de cada um |
 | `07-matriz-de-eventos.md` | O que cada evento significa e quais parâmetros carrega |
 | `A9-especificacao-container.md` | Como o container está configurado, tag por tag |
 | `11-plano-de-implementacao.md` | O que foi alterado no site e por quê |
@@ -398,5 +480,6 @@ vira aditivo formal, nunca execução direta.
 
 ---
 
-**Última atualização:** 2026-08-05 · Instrumentação em produção desde
-2026-08-05, container GTM versão 2, 29 testes aprovados.
+**Última atualização:** 2026-08-06 · Instrumentação em produção desde
+2026-08-05, container GTM versão 2, 30 testes aprovados e 1 reprovado (T28).
+Painel do cliente construído em 2026-08-06, ainda não publicado.
