@@ -1,4 +1,11 @@
-// Formatação de números e datas do painel, sempre em português do Brasil.
+// Formatação e tradução de tudo o que a plataforma devolve, sempre em
+// português do Brasil.
+//
+// **Por que traduzir é obrigatório e não é capricho.** A Data API responde em
+// inglês: `Unassigned`, `Organic Social`, `State of Santa Catarina`. Entregar
+// isso ao cliente transfere para ele o trabalho de decifrar a ferramenta — e
+// termos como "Unassigned" não são apenas estrangeiros, são jargão de dentro do
+// produto do Google. Quem lê "Unassigned" conclui que faltou alguma coisa.
 
 const numero = new Intl.NumberFormat("pt-BR");
 const moeda = new Intl.NumberFormat("pt-BR", {
@@ -31,6 +38,12 @@ export function pct(numerador: number, denominador: number): string {
   return `${((numerador / denominador) * 100).toFixed(1).replace(".", ",")}%`;
 }
 
+/** Percentual sem casa decimal, para texto corrido. */
+export function pctCurto(numerador: number, denominador: number): string {
+  if (!denominador) return "—";
+  return `${Math.round((numerador / denominador) * 100)}%`;
+}
+
 export function quando(iso: string): string {
   return dataHora.format(new Date(iso));
 }
@@ -55,7 +68,7 @@ export function variacao(atual: number, anterior: number): string | null {
 }
 
 /**
- * Os 7 valores de `click_position` traduzidos para nomes que o cliente
+ * Os valores de `click_position` traduzidos para nomes que o cliente
  * reconhece na própria página.
  *
  * Os valores crus são os declarados na seção 4 do `CLAUDE.md` do repositório.
@@ -80,5 +93,76 @@ export function posicao(valor: string): string {
   return POSICOES[valor] ?? valor;
 }
 
+/**
+ * Os canais de origem da plataforma, traduzidos.
+ *
+ * Dois merecem explicação, porque a tradução literal não bastaria:
+ *
+ * - **`Direct`** não quer dizer "veio direto do nada". Quer dizer que o
+ *   navegador não informou de onde veio — link salvo, endereço digitado,
+ *   aplicativo de mensagem, PDF. "Acesso direto" é o mais próximo que se pode
+ *   dizer sem afirmar demais.
+ * - **`Unassigned`** é a plataforma dizendo que não conseguiu classificar. Não
+ *   é categoria de origem, é ausência de classificação — e o cliente que lê
+ *   "não atribuído" entende que faltou algo, quando não faltou.
+ */
+const CANAIS: Record<string, string> = {
+  Direct: "Acesso direto",
+  "Organic Search": "Busca no Google",
+  "Paid Search": "Anúncio na busca",
+  "Organic Social": "Redes sociais",
+  "Paid Social": "Anúncio em rede social",
+  "Organic Video": "Vídeo",
+  "Paid Video": "Anúncio em vídeo",
+  "Organic Shopping": "Vitrine de compras",
+  "Paid Shopping": "Anúncio de compras",
+  "Paid Other": "Outro anúncio",
+  "Cross-network": "Anúncio em várias redes",
+  Display: "Anúncio de display",
+  Email: "E-mail",
+  Referral: "Link em outro site",
+  Affiliates: "Afiliados",
+  Audio: "Áudio",
+  SMS: "SMS",
+  "Mobile Push Notifications": "Notificação de aplicativo",
+  Unassigned: "Origem não identificada",
+  "(not set)": "Origem não identificada",
+  "(direct)": "Acesso direto",
+};
+
+export function canal(valor: string): string {
+  return CANAIS[valor] ?? valor;
+}
+
+/**
+ * Nomes de região como a plataforma os devolve: em inglês, e com o prefixo
+ * "State of" nos estados brasileiros. `State of Santa Catarina` vira
+ * `Santa Catarina`.
+ *
+ * O prefixo é removido de forma genérica em vez de estado por estado — são 27
+ * unidades federativas, e uma lista incompleta deixaria justamente as menos
+ * frequentes em inglês, que é onde ninguém repararia.
+ */
+const REGIOES: Record<string, string> = {
+  "Federal District": "Distrito Federal",
+  "(not set)": "Região não identificada",
+};
+
+export function regiao(valor: string): string {
+  if (!valor) return "Região não identificada";
+  if (REGIOES[valor]) return REGIOES[valor];
+  return valor.replace(/^State of\s+/i, "");
+}
+
+export function cidade(valor: string): string {
+  if (!valor || valor === "(not set)") return "Cidade não identificada";
+  return valor;
+}
+
 /** Dias da semana na convenção da plataforma: 0 é domingo. */
 export const DIAS_SEMANA = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+/** Plural simples, para frases montadas com número. */
+export function plural(quantidade: number, singular: string, plural: string): string {
+  return quantidade === 1 ? singular : plural;
+}

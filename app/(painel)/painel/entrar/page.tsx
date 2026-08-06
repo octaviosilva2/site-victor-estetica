@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { auth, signIn, temAcesso } from "@/auth";
+import { INSTANCIA } from "@/lib/painel/instancia";
 
 // Tela de entrada do painel.
 //
@@ -46,9 +47,10 @@ export default async function Entrar({
   return (
     <div className="pnl-entrada">
       <div className="pnl-entrada-caixa">
-        <h1>Painel de resultados</h1>
+        <span className="pnl-entrada-simbolo" aria-hidden="true" />
+        <h1>Painel Escale IA</h1>
         <p>
-          Os números do site do Dr. Victor Folster. O acesso é restrito a uma
+          Os números do site de {INSTANCIA.cliente}. O acesso é restrito a uma
           conta Google.
         </p>
 

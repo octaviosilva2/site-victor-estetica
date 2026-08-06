@@ -373,6 +373,25 @@ perto. Por isso:
 `(site)` e `(painel)` são route groups: não aparecem em URL nenhuma, e nenhum
 endereço do site mudou por causa deles.
 
+### O painel é produto da Escale IA, não uma página a mais do consultório
+
+Decisão **D7** de `05-escopo-contratado.md`, de 2026-08-06: o código do painel é
+ativo da agência e se reaproveita nos próximos clientes; o que é do Victor é a
+instância — o endereço, o acesso e **o dado**, que nunca sai da propriedade
+dele. Três consequências para quem mexer aqui:
+
+| | Onde | Regra |
+|---|---|---|
+| **Identidade** | `app/painel.css` | A paleta é a da **Escale IA**, dos tokens canônicos em `empresas-arquivos/ESCALE-IA/4-Marca/tokens/` (v1.2.0), onde cada par texto/fundo já foi medido em WCAG. **Não invente cor**: se faltar uma, ela existe lá. O painel deixou de herdar a paleta do site do cliente em 06/08 |
+| **O que é do cliente** | `lib/painel/instancia.ts` | Nome, subtítulo, como se chama a ação importante e quais são os sinais de contexto. **Nada além disso.** Se você precisou editar um componente para atender a um cliente, o componente está errado ou falta uma chave nesse arquivo |
+| **Cor não é tema de cliente** | — | Índigo e ciano carregam significado (abaixo). Trocá-los por cor de cliente destrói a regra que eles tornam visível |
+
+**O ciano nunca pinta algarismo.** Ele mede 2.07:1 sobre branco e os próprios
+tokens da marca proíbem usá-lo como texto ou borda de controle em fundo claro.
+A família de contexto se marca por **área** — faixa do cartão, preenchimento de
+barra, ponto do rótulo — e o número fica em tinta. Está escrito no cabeçalho de
+`app/painel.css`, e o motivo é contraste, não gosto.
+
 ### Os seis pontos que quebram o painel sem erro nenhum
 
 | O que | Onde | O que acontece se mexer |
@@ -383,6 +402,8 @@ endereço do site mudou por causa deles.
 | Os nomes das 5 dimensões | `DIMENSAO` em `lib/ga4.ts` | Nome errado não dá erro: a consulta responde com sucesso e a coluna vem **vazia**. Descoberto meses depois |
 | O `overrides` de `google-auth-library` | `package.json` | Sem ele há duas cópias da biblioteca, com tipos diferentes para a mesma classe, e o build quebra |
 | `exigirAcesso()` como primeira linha da página | `lib/painel/sessao.ts` | É a trava real de acesso. Página nova do painel sem essa chamada expõe dado do cliente |
+| Ler a coluna `dateRange`, e **não** a ordem das linhas | `duasJanelas()` em `lib/painel/consultas.ts` | Com dois intervalos, a API devolve uma linha por intervalo **em ordem não garantida**. Tratar a linha 0 como período atual mostra o período anterior com o rótulo do atual, sem erro nenhum. Achado E0.12, 06/08 |
+| `dateRange` **se lê, não se pede** | o mesmo lugar | Listá-la em `dimensions` devolve `INVALID_ARGUMENT: Field dateRange is not a dimension` e derruba a página. Ela entra sozinha no cabeçalho da resposta. Foi a correção errada do problema da linha acima, e tirou a visão geral do ar por dois commits |
 
 ### Regras do painel que vêm de contrato, não de gosto
 
@@ -390,8 +411,9 @@ Estão em `08-matriz-do-dashboard.md` e `06-plano-de-medicao.md`. Mudar qualquer
 uma é mudança de escopo:
 
 1. **Ação importante e sinal de contexto nunca se somam.** WhatsApp é a ação.
-   Instagram, endereço e Grupo VIP são contexto. A cor codifica isso: verde
-   escuro `#4B5A45` para ação, verde claro `#7C8A76` para contexto.
+   Instagram, endereço e Grupo VIP são contexto. A cor codifica isso: índigo
+   `#4F46E5` para ação, ciano `#00C2FF` para contexto — as duas famílias da
+   marca da Escale IA, e não uma escolha estética.
 2. **Todo cartão que pode ser mal lido carrega uma linha dizendo o que ele NÃO
    significa.** Por isso a propriedade `limite` de `Cartao` é obrigatória —
    esquecer virou erro de compilação.
@@ -400,9 +422,23 @@ uma é mudança de escopo:
    aproximada", nunca "localização". "Ação importante", nunca "conversão".
 4. **Aviso de consentimento na primeira página** e **aviso de frescor no
    rodapé** de todas.
-5. **O bloco do Google Ads aparece mesmo sem dado**, com "aguardando
+5. **A página do Google Ads aparece mesmo sem dado**, com "aguardando
    veiculação". Nunca esconder, nunca preencher com estimativa.
-6. **12 indicadores em 3 páginas.** Um indicador a mais é aditivo de escopo.
+6. **17 indicadores em 4 páginas**, desde o aditivo A2 de 2026-08-06. Um
+   indicador a mais é aditivo de escopo.
+7. **Quando a soma das partes não bater com o total, o painel diz isso na
+   tela**, com a diferença explícita. É a propriedade `total` de `Barras`. A
+   plataforma omite linhas por limiar de privacidade, e o silêncio sobre a
+   diferença foi o que derrubou a confiança no painel em 06/08.
+8. **Enquanto a série for curta, o painel declara desde quando existe
+   medição.** `INICIO_DA_MEDICAO` em `lib/painel/periodo.ts`. Sem isso, trocar
+   "esta semana" por "este ano" e ver o mesmo número parece painel travado.
+
+**Nada em inglês chega ao cliente.** A Data API responde `Unassigned`,
+`Organic Social`, `State of Santa Catarina`. As traduções ficam em
+`lib/painel/formato.ts` — `canal()`, `regiao()`, `cidade()`, `posicao()`. Valor
+que não estiver no mapa aparece como veio, de propósito: é a pista de que
+surgiu algo novo, e um rótulo genérico a apagaria.
 
 ### Um erro no painel derruba o site
 
@@ -427,6 +463,9 @@ exceção.
       linha? (seção 12)
 - [ ] Se mexi no painel: nenhum rótulo usa termo vedado, e todo cartão novo tem
       a linha do que ele não significa?
+- [ ] Se escrevi texto do painel: nenhum nome de cliente ficou dentro de
+      componente — o que é do cliente vem de `lib/painel/instancia.ts`
+- [ ] Se acrescentei cor: ela existe nos tokens da Escale IA, ou eu inventei?
 
 ### Comando de conferência
 
@@ -483,8 +522,11 @@ vira aditivo formal, nunca execução direta.
 
 **Última atualização:** 2026-08-06 · Instrumentação em produção desde
 2026-08-05, container GTM versão 2. **Painel publicado em 2026-08-06** em
-`dados.victorfolster.com.br`. 31 testes aprovados, 1 parcial (T33), 1 reprovado
-(T28). Falta entrar no painel e conferir os 12 indicadores.
+`dados.victorfolster.com.br`, e **redesenhado no mesmo dia** com a identidade
+da Escale IA, período em linguagem de negócio e a página de Google Ads do
+aditivo A2 — 17 indicadores em 4 páginas. 31 testes aprovados, 1 parcial (T33),
+1 reprovado (T28). Falta entrar no painel e conferir os indicadores (T31),
+o vocabulário (T38) e o desempenho (T36).
 
 > **Como conferir, em 10 segundos, que a separação continua de pé.** Abra o
 > console em `www.victorfolster.com.br` e digite `typeof window.dataLayer` —

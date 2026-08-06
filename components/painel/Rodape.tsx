@@ -3,7 +3,7 @@ import { quando } from "@/lib/painel/formato";
 // Aviso de frescor. Obrigatório em todas as páginas — regra 5 de
 // `08-matriz-do-dashboard.md`.
 //
-// Duas coisas precisam estar escritas, e as duas costumam ser a explicação de
+// Três coisas precisam estar escritas, e as três costumam ser a explicação de
 // uma dúvida futura do cliente:
 //
 // 1. O dado do dia corrente é preliminar. A plataforma leva de 24 a 48 horas
@@ -11,6 +11,9 @@ import { quando } from "@/lib/painel/formato";
 //    dias (`06-plano-de-medicao.md`, seção 3). Números de hoje mudam sozinhos.
 // 2. A leitura é guardada por 12 horas. Recarregar a página não traz número
 //    novo — e isso é escolha, não lentidão.
+// 3. Linhas com pouquíssimos acessos podem não aparecer. Quando isso acontece
+//    numa lista específica, o próprio cartão diz a diferença (regra 7); aqui
+//    fica a explicação geral, para quem procurar o motivo.
 
 export default function Rodape({ geradoEm }: { geradoEm: string }) {
   return (
@@ -28,6 +31,7 @@ export default function Rodape({ geradoEm }: { geradoEm: string }) {
         Linhas com pouquíssimos acessos podem não aparecer. É proteção de
         privacidade da própria plataforma, não falha da medição.
       </p>
+      <p className="pnl-rodape-marca">Painel Escale IA</p>
     </footer>
   );
 }

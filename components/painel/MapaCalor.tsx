@@ -57,12 +57,12 @@ export default function MapaCalor({
                   <span
                     className="pnl-calor-celula"
                     style={{
-                      // Transparência proporcional. O tom é sempre o verde da
-                      // marca; o que varia é quanto do fundo aparece.
+                      // Transparência proporcional. O tom é sempre o índigo da
+                      // Escale IA; o que varia é quanto do fundo aparece.
                       background:
                         sessoes === 0
-                          ? "var(--bg-alt)"
-                          : `rgba(75, 90, 69, ${(0.15 + (sessoes / maior) * 0.85).toFixed(2)})`,
+                          ? "var(--pnl-superficie-fundo)"
+                          : `rgb(79 70 229 / ${(0.15 + (sessoes / maior) * 0.85).toFixed(2)})`,
                     }}
                     title={`${DIAS_SEMANA[dia]}, ${hora}h — ${n(sessoes)} ${sessoes === 1 ? "sessão" : "sessões"}`}
                   />

@@ -1,38 +1,102 @@
-/* Estilo do PAINEL do cliente. Carregado apenas pelo layout de `(painel)`.
+/* Estilo do PAINEL. Carregado apenas pelo layout de `(painel)`.
  *
- * As variáveis de cor vêm de `site.css`, que o layout raiz importa para o
- * projeto inteiro — a paleta é a mesma da marca, e o painel não redefine
- * nenhuma cor por conta própria.
+ * ===========================================================================
+ * IDENTIDADE: ESCALE IA, NÃO O CLIENTE
+ * ===========================================================================
  *
- * Duas cores carregam significado e não são escolha estética:
+ * Até 2026-08-06 este arquivo herdava a paleta do site do Victor. O painel
+ * parecia uma página a mais do consultório. Ele não é: é produto da Escale IA,
+ * entregue como instância a um cliente (decisão D7 de `05-escopo-contratado.md`).
+ * Os valores abaixo vêm dos tokens canônicos da marca, em
+ * `empresas-arquivos/ESCALE-IA/4-Marca/tokens/`, v1.2.0 — onde cada par
+ * texto/fundo já foi medido em WCAG 2.1. Não invente cor aqui: se faltar uma,
+ * ela existe lá.
  *
- *   --forest (#4B5A45)  AÇÃO IMPORTANTE — só o WhatsApp
- *   --sage   (#7C8A76)  SINAL DE CONTEXTO — Instagram, endereço, Grupo VIP
+ * O que é do cliente é o conteúdo, e ele entra por `lib/painel/instancia.ts`.
+ * Nenhuma cor deste arquivo muda de cliente para cliente.
+ *
+ * ===========================================================================
+ * AS DUAS FAMÍLIAS DE COR CARREGAM SIGNIFICADO
+ * ===========================================================================
+ *
+ *   --pnl-acao      (#4F46E5, índigo)  AÇÃO IMPORTANTE — só o WhatsApp
+ *   --pnl-contexto  (#00C2FF, ciano)   SINAL DE CONTEXTO — Instagram, endereço,
+ *                                      Grupo VIP
  *
  * A regra de `08-matriz-do-dashboard.md` é que ação importante e sinal de
- * contexto nunca se somam. A cor é a forma de a regra continuar visível depois
- * que ninguém lembrar mais dela: dois números da mesma cor podem ser lidos
- * juntos, dois de cores diferentes não.
+ * contexto **nunca se somam**. A cor é a forma de a regra continuar visível
+ * depois que ninguém lembrar mais dela: dois números da mesma cor podem ser
+ * lidos juntos, dois de cores diferentes não.
+ *
+ * **Por que o ciano não pinta algarismo.** Ele mede 2.07:1 sobre branco e
+ * reprova o mínimo de 3:1 exigido até para texto grande — os próprios tokens
+ * proíbem usá-lo como texto ou borda de controle em fundo claro. Então a
+ * família de contexto se marca por **área**: faixa do cartão, preenchimento de
+ * barra, ponto do rótulo. O número em si fica em tinta.
+ *
+ * Isso não enfraquece a distinção; reforça a hierarquia. O número que importa
+ * — a ação — é o único colorido da tela. Os sinais de contexto ficam
+ * reconhecíveis pela faixa, e discretos pelo algarismo neutro.
  *
  * Todo seletor é prefixado `pnl-` para não alcançar o site institucional, que
  * compartilha a mesma folha de estilo base.
  */
 
-/* --- Casca --- */
 .pnl-corpo {
+  /* --- Cor: camada semântica dos tokens da Escale IA ---------------------- */
+  --pnl-canvas: #f5f6fa;
+  --pnl-superficie: #ffffff;
+  --pnl-superficie-fundo: #f5f6fa;
+
+  --pnl-tinta: #111318;
+  --pnl-tinta-2: #4a5260; /* 7.87:1 sobre branco */
+  --pnl-tinta-3: #5c6575; /* 5.88:1 sobre branco, 5.44:1 sobre Ice */
+
+  --pnl-borda: #dde1e7;
+  --pnl-borda-forte: #868fa0; /* >= 3:1: obrigatório em controle */
+
+  --pnl-acao: #4f46e5;
+  --pnl-acao-forte: #3730a3;
+  --pnl-acao-superficie: #e0e7ff;
+
+  --pnl-contexto: #00c2ff;
+  --pnl-contexto-superficie: rgb(0 194 255 / 12%);
+
+  --pnl-alerta: #b45309;
+  --pnl-alerta-superficie: #fef3c7;
+
+  /* --- Forma ------------------------------------------------------------- */
+  --pnl-raio: 12px;
+  --pnl-raio-card: 20px;
+  --pnl-sombra: 0 1px 2px rgb(17 19 24 / 8%);
+  --pnl-sombra-alta: 0 10px 30px rgb(17 19 24 / 10%);
+
+  font-family: var(--font-manrope), system-ui, sans-serif;
+  background: var(--pnl-canvas);
+  color: var(--pnl-tinta);
   min-height: 100vh;
-  padding-bottom: 48px;
-}
-.pnl-largura {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 0 16px;
+  padding-bottom: 56px;
 }
 
-/* --- Cabeçalho --- */
+.pnl-largura {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.pnl-corpo :focus-visible {
+  outline: 2px solid var(--pnl-acao);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ===========================================================================
+   Cabeçalho
+   =========================================================================== */
+
 .pnl-topo {
-  border-bottom: 1px solid var(--deep);
-  background: var(--white);
+  background: var(--pnl-superficie);
+  border-bottom: 1px solid var(--pnl-borda);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -44,41 +108,63 @@
   gap: 12px;
   padding: 14px 0 10px;
 }
+
+/* A marca da agência primeiro, o cliente depois — é o painel da Escale IA
+   servindo o cliente, e não o contrário. */
 .pnl-marca {
-  font-family: var(--font-fraunces), Georgia, serif;
-  font-size: 15px;
-  line-height: 1.2;
-  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
-.pnl-marca span {
-  display: block;
-  font-family: var(--font-manrope), system-ui, sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+.pnl-marca-simbolo {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #00c2ff 0%, #4f46e5 55%, #7c3aed 100%);
+  flex-shrink: 0;
+}
+.pnl-marca-texto {
+  min-width: 0;
+}
+.pnl-marca-nome {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  margin-top: 3px;
+  color: var(--pnl-tinta);
+  line-height: 1.2;
+  margin: 0;
+}
+.pnl-marca-cliente {
+  font-size: 12px;
+  color: var(--pnl-tinta-3);
+  margin: 2px 0 0;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .pnl-sair {
   background: none;
-  border: 1px solid var(--deep);
+  border: 1px solid var(--pnl-borda-forte);
   border-radius: 999px;
   padding: 7px 14px;
   font: inherit;
   font-size: 12px;
-  color: var(--ink-soft);
+  color: var(--pnl-tinta-2);
   cursor: pointer;
   white-space: nowrap;
 }
 .pnl-sair:hover {
-  border-color: var(--forest);
-  color: var(--forest);
+  border-color: var(--pnl-acao);
+  color: var(--pnl-acao);
 }
 
-/* Abas das 3 páginas. Rolagem lateral no celular em vez de quebra de linha. */
+/* Abas. Rolagem lateral no celular em vez de quebra de linha. */
 .pnl-abas {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -87,120 +173,277 @@
   display: none;
 }
 .pnl-aba {
-  padding: 9px 14px;
+  padding: 10px 14px;
   font-size: 13px;
-  color: var(--ink-soft);
+  color: var(--pnl-tinta-2);
   text-decoration: none;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
 }
+.pnl-aba:hover {
+  color: var(--pnl-acao);
+}
 .pnl-aba[aria-current="page"] {
-  color: var(--forest);
-  border-bottom-color: var(--forest);
+  color: var(--pnl-acao);
+  border-bottom-color: var(--pnl-acao);
   font-weight: 600;
 }
 
-/* --- Seletor de período --- */
+/* ===========================================================================
+   Seletor de período
+   =========================================================================== */
+
 .pnl-periodo {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  padding: 16px 0 4px;
-}
-.pnl-periodo-rotulo {
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+  padding: 18px 0 0;
 }
 .pnl-periodo-opcoes {
   display: flex;
   gap: 6px;
+  flex-wrap: wrap;
 }
 .pnl-periodo-opcao {
-  padding: 6px 12px;
-  border: 1px solid var(--deep);
+  padding: 7px 13px;
+  border: 1px solid var(--pnl-borda);
   border-radius: 999px;
-  background: var(--white);
-  font-size: 12px;
-  color: var(--ink-soft);
+  background: var(--pnl-superficie);
+  font-size: 13px;
+  color: var(--pnl-tinta-2);
   text-decoration: none;
+  white-space: nowrap;
+}
+.pnl-periodo-opcao:hover {
+  border-color: var(--pnl-acao);
+  color: var(--pnl-acao);
 }
 .pnl-periodo-opcao[aria-current="true"] {
-  background: var(--forest);
-  border-color: var(--forest);
-  color: var(--white);
+  background: var(--pnl-acao);
+  border-color: var(--pnl-acao);
+  color: #ffffff;
   font-weight: 600;
 }
 
-/* --- Títulos de seção --- */
-.pnl-secao {
-  margin: 32px 0 0;
+/* Escolher um mês. `<details>` em vez de menu com JavaScript: o painel inteiro
+   funciona sem script, e um seletor de período não é motivo para mudar isso. */
+.pnl-meses {
+  position: relative;
 }
-.pnl-secao h2 {
-  font-size: 19px;
-  margin-bottom: 4px;
+.pnl-meses > summary {
+  padding: 7px 13px;
+  border: 1px solid var(--pnl-borda);
+  border-radius: 999px;
+  background: var(--pnl-superficie);
+  font-size: 13px;
+  color: var(--pnl-tinta-2);
+  cursor: pointer;
+  white-space: nowrap;
+  list-style: none;
+}
+.pnl-meses > summary::-webkit-details-marker {
+  display: none;
+}
+.pnl-meses[open] > summary {
+  border-color: var(--pnl-acao);
+  color: var(--pnl-acao);
+}
+.pnl-meses-lista {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 190px;
+  max-height: 260px;
+  overflow-y: auto;
+  background: var(--pnl-superficie);
+  border: 1px solid var(--pnl-borda);
+  border-radius: var(--pnl-raio);
+  box-shadow: var(--pnl-sombra-alta);
+  padding: 6px;
+}
+.pnl-meses-lista a {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--pnl-tinta-2);
+  text-decoration: none;
+}
+.pnl-meses-lista a:hover {
+  background: var(--pnl-acao-superficie);
+  color: var(--pnl-acao-forte);
+}
+.pnl-meses-lista a[aria-current="true"] {
+  background: var(--pnl-acao);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+/* A linha que diz o que o período escolhido cobre de verdade. Regra 8 de
+   `08-matriz-do-dashboard.md` — ver `Cabecalho.tsx`. */
+.pnl-periodo-alcance {
+  font-size: 12.5px;
+  color: var(--pnl-tinta-3);
+  margin: 10px 0 0;
+  line-height: 1.5;
+}
+.pnl-periodo-alcance b {
+  color: var(--pnl-tinta);
+  font-weight: 600;
+}
+
+/* ===========================================================================
+   Hierarquia: título de página, seção, cartão
+   =========================================================================== */
+
+.pnl-titulo {
+  margin: 22px 0 0;
+}
+.pnl-titulo h1 {
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.pnl-titulo p {
+  font-size: 14px;
+  color: var(--pnl-tinta-2);
+  margin: 6px 0 0;
+  line-height: 1.5;
+  max-width: 62ch;
+}
+
+.pnl-secao {
+  margin: 26px 0 0;
+}
+.pnl-secao > h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0 0 3px;
 }
 .pnl-secao-nota {
   font-size: 13px;
-  color: var(--ink-soft);
-  margin: 0 0 14px;
+  color: var(--pnl-tinta-3);
+  margin: 0 0 12px;
   line-height: 1.5;
+  max-width: 70ch;
 }
 
-/* --- Cartões --- */
 .pnl-grade {
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr;
 }
-@media (min-width: 620px) {
+@media (min-width: 700px) {
   .pnl-grade-2 {
     grid-template-columns: repeat(2, 1fr);
   }
   .pnl-grade-3 {
     grid-template-columns: repeat(3, 1fr);
   }
+  /* O primeiro cartão ocupa o dobro: é a leitura guiada da página. */
+  .pnl-grade-destaque {
+    grid-template-columns: 1.35fr 1fr;
+  }
 }
+
 .pnl-cartao {
-  background: var(--white);
-  border: 1px solid var(--deep);
-  border-radius: 12px;
-  padding: 16px;
+  background: var(--pnl-superficie);
+  border: 1px solid var(--pnl-borda);
+  border-radius: var(--pnl-raio-card);
+  padding: 16px 18px;
+  box-shadow: var(--pnl-sombra);
+  /* A faixa de família nasce transparente e é pintada pelo tom. */
+  border-top: 3px solid transparent;
 }
+.pnl-cartao-acao {
+  border-top-color: var(--pnl-acao);
+}
+.pnl-cartao-contexto {
+  border-top-color: var(--pnl-contexto);
+}
+
 .pnl-cartao-rotulo {
   font-size: 11px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  font-weight: 600;
+  color: var(--pnl-tinta-3);
+  font-weight: 700;
   margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
+/* Ponto de família ao lado do rótulo: repete a informação da faixa para quem
+   lê o cartão isolado, fora do contexto da grade. */
+.pnl-ponto {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.pnl-ponto-acao {
+  background: var(--pnl-acao);
+}
+.pnl-ponto-contexto {
+  background: var(--pnl-contexto);
+}
+
 .pnl-numero {
-  font-family: var(--font-fraunces), Georgia, serif;
-  font-size: 38px;
+  font-size: 34px;
+  font-weight: 700;
   line-height: 1.05;
-  margin: 10px 0 0;
-  color: var(--forest);
+  margin: 12px 0 0;
+  color: var(--pnl-tinta);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
-/* Sinal de contexto: mesma tipografia, cor diferente. A diferença de cor é a
-   informação — ver o cabeçalho deste arquivo. */
-.pnl-numero-contexto {
-  color: var(--sage);
+/* Só a ação importante é colorida. Ver o cabeçalho deste arquivo. */
+.pnl-numero-acao {
+  color: var(--pnl-acao);
 }
-.pnl-numero-neutro {
-  color: var(--ink);
+.pnl-numero-grande {
+  font-size: 46px;
 }
+
 .pnl-comparacao {
-  font-size: 12px;
-  color: var(--ink-soft);
+  font-size: 12.5px;
+  color: var(--pnl-tinta-3);
   margin: 8px 0 0;
+  line-height: 1.5;
 }
 .pnl-comparacao b {
-  font-weight: 600;
-  color: var(--ink);
+  font-weight: 700;
+  color: var(--pnl-tinta);
+}
+.pnl-sobe {
+  color: #15803d;
+  font-weight: 700;
+}
+.pnl-desce {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+/* A leitura: o que fazer com o número. Fica ACIMA da linha de limite porque
+   é o que o cliente procura; o limite é a ressalva, não a mensagem. */
+.pnl-leitura {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--pnl-tinta-2);
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  background: var(--pnl-superficie-fundo);
+  border-radius: 10px;
+  border-left: 3px solid var(--pnl-acao);
+}
+.pnl-leitura b {
+  color: var(--pnl-tinta);
+  font-weight: 700;
 }
 
 /* A linha que diz o que o número NÃO significa. Obrigatória em todo cartão que
@@ -208,17 +451,34 @@
 .pnl-limite {
   font-size: 12px;
   line-height: 1.45;
-  color: var(--ink-soft);
+  color: var(--pnl-tinta-3);
   margin: 12px 0 0;
   padding-top: 10px;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--pnl-borda);
 }
 
-/* --- Barras horizontais --- */
+/* A diferença entre o total e a soma das partes, quando existe. Regra 7. */
+.pnl-diferenca {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--pnl-alerta);
+  background: var(--pnl-alerta-superficie);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 12px 0 0;
+}
+.pnl-diferenca b {
+  font-weight: 700;
+}
+
+/* ===========================================================================
+   Barras horizontais
+   =========================================================================== */
+
 .pnl-barras {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 11px;
   margin: 14px 0 0;
   list-style: none;
   padding: 0;
@@ -226,35 +486,137 @@
 .pnl-barra-topo {
   display: flex;
   justify-content: space-between;
+  align-items: baseline;
   gap: 10px;
   font-size: 13px;
   margin-bottom: 5px;
 }
 .pnl-barra-nome {
-  color: var(--ink);
+  color: var(--pnl-tinta);
   overflow-wrap: anywhere;
 }
 .pnl-barra-valor {
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 700;
   flex-shrink: 0;
 }
+.pnl-barra-parte {
+  font-weight: 400;
+  color: var(--pnl-tinta-3);
+  font-size: 12px;
+  margin-left: 5px;
+}
 .pnl-barra-trilho {
-  height: 8px;
-  background: var(--bg-alt);
+  height: 9px;
+  background: var(--pnl-superficie-fundo);
   border-radius: 999px;
   overflow: hidden;
 }
 .pnl-barra-preenchimento {
   height: 100%;
-  background: var(--forest);
+  background: var(--pnl-acao);
   border-radius: 999px;
 }
 .pnl-barra-preenchimento.contexto {
-  background: var(--sage);
+  background: var(--pnl-contexto);
+}
+/* A barra vencedora ganha peso — leitura guiada em vez de lista plana. */
+.pnl-barras li:first-child .pnl-barra-nome {
+  font-weight: 700;
 }
 
-/* --- Tabelas --- */
+/* ===========================================================================
+   Rosca de origem
+   =========================================================================== */
+
+.pnl-rosca-bloco {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.pnl-rosca {
+  width: 148px;
+  height: 148px;
+  flex-shrink: 0;
+}
+.pnl-rosca-centro-numero {
+  font-size: 26px;
+  font-weight: 700;
+  fill: var(--pnl-tinta);
+}
+.pnl-rosca-centro-rotulo {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  fill: var(--pnl-tinta-3);
+}
+.pnl-legenda {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  min-width: 190px;
+  flex: 1;
+}
+.pnl-legenda li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+}
+.pnl-legenda-cor {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.pnl-legenda-nome {
+  flex: 1;
+  color: var(--pnl-tinta);
+  overflow-wrap: anywhere;
+}
+.pnl-legenda-valor {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pnl-legenda-valor span {
+  font-weight: 400;
+  color: var(--pnl-tinta-3);
+  margin-left: 5px;
+}
+
+/* ===========================================================================
+   Tendência
+   =========================================================================== */
+
+.pnl-tendencia-bloco {
+  margin-top: 14px;
+}
+.pnl-tendencia {
+  display: block;
+  width: 100%;
+  height: 116px;
+  overflow: visible;
+}
+.pnl-tendencia-eixo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--pnl-tinta-3);
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===========================================================================
+   Tabelas
+   =========================================================================== */
+
 .pnl-tabela {
   width: 100%;
   border-collapse: collapse;
@@ -264,35 +626,32 @@
 .pnl-tabela th,
 .pnl-tabela td {
   text-align: left;
-  padding: 9px 10px;
-  border-bottom: 1px solid var(--line);
+  padding: 10px;
+  border-bottom: 1px solid var(--pnl-borda);
 }
 .pnl-tabela th {
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  font-weight: 600;
+  color: var(--pnl-tinta-3);
+  font-weight: 700;
 }
 .pnl-tabela td.num,
 .pnl-tabela th.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
+.pnl-tabela tbody tr:last-child td {
+  border-bottom: none;
+}
 .pnl-rolagem {
   overflow-x: auto;
 }
 
-/* --- Tendência (linha) --- */
-.pnl-tendencia {
-  display: block;
-  width: 100%;
-  height: 56px;
-  margin-top: 12px;
-  overflow: visible;
-}
+/* ===========================================================================
+   Mapa de calor
+   =========================================================================== */
 
-/* --- Mapa de calor hora x dia --- */
 .pnl-calor {
   border-collapse: collapse;
   margin-top: 14px;
@@ -304,80 +663,111 @@
   text-align: center;
 }
 .pnl-calor th {
-  color: var(--ink-soft);
-  font-weight: 600;
-  padding: 2px 4px;
+  color: var(--pnl-tinta-3);
+  font-weight: 700;
+  padding: 2px 5px;
   white-space: nowrap;
 }
 .pnl-calor-celula {
-  width: 13px;
-  height: 15px;
-  border-radius: 2px;
+  width: 14px;
+  height: 16px;
+  border-radius: 3px;
   display: block;
 }
 
-/* --- Avisos --- */
+/* ===========================================================================
+   Avisos
+   =========================================================================== */
+
 .pnl-aviso {
-  background: var(--white);
-  border: 1px solid var(--deep);
-  border-left: 3px solid var(--forest);
-  border-radius: 10px;
+  background: var(--pnl-superficie);
+  border: 1px solid var(--pnl-borda);
+  border-left: 3px solid var(--pnl-acao);
+  border-radius: var(--pnl-raio);
   padding: 14px 16px;
   font-size: 13px;
   line-height: 1.55;
-  color: var(--ink-soft);
-  margin: 18px 0 0;
+  color: var(--pnl-tinta-2);
+  margin: 16px 0 0;
 }
 .pnl-aviso b {
-  color: var(--ink);
-  font-weight: 600;
+  color: var(--pnl-tinta);
+  font-weight: 700;
 }
 .pnl-aviso-espera {
-  border-left-color: var(--sage);
+  border-left-color: var(--pnl-contexto);
+}
+.pnl-aviso-atencao {
+  border-left-color: var(--pnl-alerta);
+  background: var(--pnl-alerta-superficie);
+  border-color: #f0dcae;
 }
 
-/* --- Vazio --- */
 .pnl-vazio {
   font-size: 13px;
-  color: var(--ink-soft);
+  color: var(--pnl-tinta-3);
   margin: 14px 0 0;
   line-height: 1.5;
 }
 
-/* --- Rodapé --- */
+/* ===========================================================================
+   Rodapé
+   =========================================================================== */
+
 .pnl-rodape {
   margin-top: 40px;
   padding-top: 16px;
-  border-top: 1px solid var(--deep);
+  border-top: 1px solid var(--pnl-borda);
   font-size: 12px;
   line-height: 1.6;
-  color: var(--ink-soft);
+  color: var(--pnl-tinta-3);
+}
+.pnl-rodape-marca {
+  margin-top: 12px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--pnl-tinta-3);
+  font-weight: 700;
 }
 
-/* --- Tela de entrada --- */
+/* ===========================================================================
+   Tela de entrada
+   =========================================================================== */
+
 .pnl-entrada {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  background: var(--pnl-canvas);
 }
 .pnl-entrada-caixa {
-  background: var(--white);
-  border: 1px solid var(--deep);
-  border-radius: 14px;
-  padding: 28px 24px;
-  max-width: 380px;
+  background: var(--pnl-superficie);
+  border: 1px solid var(--pnl-borda);
+  border-radius: var(--pnl-raio-card);
+  box-shadow: var(--pnl-sombra-alta);
+  padding: 30px 26px;
+  max-width: 390px;
   width: 100%;
   text-align: center;
 }
+.pnl-entrada-simbolo {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #00c2ff 0%, #4f46e5 55%, #7c3aed 100%);
+  margin: 0 auto 16px;
+}
 .pnl-entrada-caixa h1 {
-  font-size: 22px;
-  margin-bottom: 6px;
+  font-size: 21px;
+  font-weight: 700;
+  margin: 0 0 6px;
 }
 .pnl-entrada-caixa p {
   font-size: 13px;
-  color: var(--ink-soft);
+  color: var(--pnl-tinta-2);
   line-height: 1.55;
   margin: 0 0 20px;
 }
@@ -390,24 +780,24 @@
   padding: 12px 18px;
   border: none;
   border-radius: 999px;
-  background: var(--forest);
-  color: var(--white);
+  background: var(--pnl-acao);
+  color: #ffffff;
   font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 .pnl-botao:hover {
-  background: #3f4c3a;
+  background: var(--pnl-acao-forte);
 }
 .pnl-erro {
-  background: #FBF3F1;
-  border: 1px solid #E3CFC9;
+  background: #fee2e2;
+  border: 1px solid #f5b9b9;
   border-radius: 10px;
   padding: 12px 14px;
   font-size: 13px;
   line-height: 1.5;
-  color: #6B3F35;
+  color: #b91c1c;
   margin: 0 0 18px;
   text-align: left;
 }

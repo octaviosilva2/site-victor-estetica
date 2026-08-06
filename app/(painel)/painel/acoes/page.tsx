@@ -3,18 +3,22 @@ import Cartao from "@/components/painel/Cartao";
 import Barras from "@/components/painel/Barras";
 import Rodape from "@/components/painel/Rodape";
 import { acoesComerciais } from "@/lib/painel/consultas";
-import { brl, n, posicao } from "@/lib/painel/formato";
+import { sinaisPorExtenso } from "@/lib/painel/instancia";
+import { n, pctCurto, plural, posicao } from "@/lib/painel/formato";
 import { lerPeriodo } from "@/lib/painel/periodo";
 import { exigirAcesso } from "@/lib/painel/sessao";
 
 // PÁGINA 2 — Ações comerciais.
 // Pergunta que a página responde: onde e como as pessoas entram em contato?
-// Indicadores 1, 2, 4, 5, 14 e 6 de `08-matriz-do-dashboard.md`.
+// Indicadores 1, 2, 4, 5 e 14 de `08-matriz-do-dashboard.md`.
 //
-// A separação visual entre a primeira metade e a segunda é a regra 1 daquele
-// documento aplicada ao desenho: ação importante em cima, em verde escuro;
-// sinais de contexto embaixo, em verde claro, sob um título que diz o que eles
-// são. Não existe nenhum total somando os dois grupos, e não deve existir.
+// A separação entre a primeira metade e a segunda é a regra 1 daquele
+// documento aplicada ao desenho: ação importante em cima, marcada em índigo;
+// sinais de contexto embaixo, marcados em ciano, sob um título que diz o que
+// eles são. Não existe nenhum total somando os dois grupos, e não deve existir.
+//
+// O indicador 6 — Google Ads — saiu desta página para a página 4 pelo aditivo
+// A2. Não o traga de volta: são dois documentos que passariam a discordar.
 
 export default async function AcoesComerciais({
   searchParams,
@@ -26,22 +30,38 @@ export default async function AcoesComerciais({
   const periodo = lerPeriodo((await searchParams).periodo);
   const dados = await acoesComerciais(periodo);
 
+  const melhorBotao = dados.agendarPorPosicao[0];
+  const maiorPonto = dados.whatsappPorPosicao[0];
+  const foraDosBotoes = dados.cliquesWhatsapp - dados.totalAgendar;
+
   return (
     <>
       <Cabecalho atual="/painel/acoes" periodo={periodo} />
 
       <main className="pnl-largura">
+        <div className="pnl-titulo">
+          <h1>Onde as pessoas pedem contato</h1>
+          <p>
+            O site tem sete pontos que abrem o WhatsApp, e quatro deles são os
+            botões escritos &ldquo;Agendar Avaliação&rdquo;. Esta tela mostra
+            quais estão funcionando.
+          </p>
+        </div>
+
         <section className="pnl-secao">
           <h2>Ação importante — WhatsApp</h2>
           <p className="pnl-secao-nota">
-            Onde estão os cliques que abrem uma conversa. Total de{" "}
-            <b>{n(dados.cliquesWhatsapp)}</b> no período.
+            Total de <b>{n(dados.cliquesWhatsapp)}</b>{" "}
+            {plural(dados.cliquesWhatsapp, "clique", "cliques")} no período. As
+            duas listas abaixo olham o mesmo total por ângulos diferentes —{" "}
+            <b>não as some</b>.
           </p>
 
           <div className="pnl-grade pnl-grade-2">
-            <div className="pnl-cartao">
+            <div className="pnl-cartao pnl-cartao-acao">
               <p className="pnl-cartao-rotulo">
-                Agendar Avaliação, por posição
+                <span className="pnl-ponto pnl-ponto-acao" aria-hidden="true" />
+                Botões &ldquo;Agendar Avaliação&rdquo;
               </p>
               <Barras
                 itens={dados.agendarPorPosicao.map((i) => ({
@@ -49,18 +69,28 @@ export default async function AcoesComerciais({
                   valor: i.cliques,
                 }))}
                 tom="acao"
+                total={dados.totalAgendar}
                 vazio="Nenhum clique nos botões de agendamento no período."
               />
+              {melhorBotao ? (
+                <p className="pnl-leitura">
+                  <b>{posicao(melhorBotao.posicao)}</b> é o botão que mais
+                  converte convite em clique. Se for para reforçar o argumento em
+                  um lugar só do site, é ali que ele já está sendo lido.
+                </p>
+              ) : null}
               <p className="pnl-limite">
-                São só os quatro botões escritos &ldquo;Agendar Avaliação&rdquo;.
-                Serve para comparar em que ponto da página o convite funciona
-                melhor — não para somar com a lista ao lado, que já os inclui.
+                São só os quatro botões escritos &ldquo;Agendar
+                Avaliação&rdquo;. Serve para comparar em que ponto da página o
+                convite funciona melhor — não para somar com a lista ao lado,
+                que já os inclui.
               </p>
             </div>
 
-            <div className="pnl-cartao">
+            <div className="pnl-cartao pnl-cartao-acao">
               <p className="pnl-cartao-rotulo">
-                Todos os cliques no WhatsApp, por posição
+                <span className="pnl-ponto pnl-ponto-acao" aria-hidden="true" />
+                Todos os pontos de WhatsApp
               </p>
               <Barras
                 itens={dados.whatsappPorPosicao.map((i) => ({
@@ -68,8 +98,19 @@ export default async function AcoesComerciais({
                   valor: i.cliques,
                 }))}
                 tom="acao"
+                total={dados.cliquesWhatsapp}
                 vazio="Nenhum clique no WhatsApp no período."
               />
+              {maiorPonto && dados.cliquesWhatsapp > 0 ? (
+                <p className="pnl-leitura">
+                  <b>
+                    {pctCurto(foraDosBotoes, dados.cliquesWhatsapp)} dos pedidos
+                    de contato vêm de fora dos botões de agendamento
+                  </b>{" "}
+                  — do menu, do rodapé, do botão flutuante. Quem chega por ali
+                  já decidiu falar antes de encontrar o convite.
+                </p>
+              ) : null}
               <p className="pnl-limite">
                 O botão flutuante costuma concentrar volume por estar sempre
                 visível na tela. Isso não quer dizer que o argumento daquele
@@ -82,9 +123,9 @@ export default async function AcoesComerciais({
         <section className="pnl-secao">
           <h2>Sinais de contexto</h2>
           <p className="pnl-secao-nota">
-            Mostram interesse, mas <b>não</b> são pedido de contato. Estão em
-            verde claro porque não se somam à ação importante nem entram na taxa
-            da primeira página.
+            Mostram interesse, mas <b>não</b> são pedido de contato. Estão
+            marcados em azul-ciano porque não se somam à ação importante nem
+            entram na taxa da primeira página.
           </p>
 
           <div className="pnl-grade pnl-grade-3">
@@ -108,92 +149,27 @@ export default async function AcoesComerciais({
             />
           </div>
 
-          <div className="pnl-cartao" style={{ marginTop: 12 }}>
-            <p className="pnl-cartao-rotulo">Instagram, por posição</p>
+          <div className="pnl-cartao pnl-cartao-contexto" style={{ marginTop: 12 }}>
+            <p className="pnl-cartao-rotulo">
+              <span className="pnl-ponto pnl-ponto-contexto" aria-hidden="true" />
+              Instagram, por posição
+            </p>
             <Barras
               itens={dados.instagramPorPosicao.map((i) => ({
                 nome: posicao(i.posicao),
                 valor: i.cliques,
               }))}
               tom="contexto"
+              total={dados.instagram}
               vazio="Nenhum clique para o Instagram no período."
             />
             <p className="pnl-limite">
               De que ponto do site saem as pessoas que vão ver o perfil.
-              Continua sendo sinal de contexto, em qualquer posição.
+              Continua sendo sinal de contexto, em qualquer posição. Somar
+              estes cliques aos de {sinaisPorExtenso()} e ao WhatsApp
+              produziria um número que não corresponde a nada.
             </p>
           </div>
-        </section>
-
-        <section className="pnl-secao">
-          <h2>Google Ads</h2>
-          <p className="pnl-secao-nota">
-            Ações que vieram de anúncio pago.
-          </p>
-
-          {dados.ads.campanhas.length === 0 ? (
-            // O bloco aparece mesmo sem dado, por determinação da matriz:
-            // esconder faria parecer que a integração não existe, e preencher
-            // com estimativa seria inventar número.
-            <div className="pnl-aviso pnl-aviso-espera">
-              <b>Aguardando veiculação.</b> A conta do Google Ads está vinculada
-              e a marcação automática está ativa, então tudo o que for investido
-              aparecerá aqui. Até agora nenhuma campanha veiculou — uma está
-              pausada e a outra está com os anúncios reprovados. Enquanto isso,
-              não há nada a mostrar, e um zero aqui significaria &ldquo;anunciou
-              e não deu resultado&rdquo;, que não é o caso.
-            </div>
-          ) : (
-            <div className="pnl-cartao">
-              <div className="pnl-rolagem">
-                <table className="pnl-tabela">
-                  <thead>
-                    <tr>
-                      <th scope="col">Campanha</th>
-                      <th scope="col" className="num">
-                        Sessões
-                      </th>
-                      <th scope="col" className="num">
-                        Ações
-                      </th>
-                      <th scope="col" className="num">
-                        Investimento
-                      </th>
-                      <th scope="col" className="num">
-                        Custo por ação
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dados.ads.campanhas.map((campanha) => (
-                      <tr key={campanha.campanha}>
-                        <td>{campanha.campanha}</td>
-                        <td className="num">{n(campanha.sessoes)}</td>
-                        <td className="num">{n(campanha.acoes)}</td>
-                        <td className="num">
-                          {campanha.custo === null ? "—" : brl(campanha.custo)}
-                        </td>
-                        <td className="num">
-                          {campanha.custo === null || campanha.acoes === 0
-                            ? "—"
-                            : brl(campanha.custo / campanha.acoes)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="pnl-limite">
-                Custo por ação é o valor investido dividido pelos cliques no
-                WhatsApp — <b>não</b> é custo por paciente. A atribuição do
-                Google Ads pode levar dias para fechar, então os números mais
-                recentes ainda mudam.
-                {dados.ads.custoIndisponivel
-                  ? " O investimento não está sendo devolvido pela plataforma neste momento; as colunas de valor aparecem vazias em vez de estimadas."
-                  : ""}
-              </p>
-            </div>
-          )}
         </section>
       </main>
 
