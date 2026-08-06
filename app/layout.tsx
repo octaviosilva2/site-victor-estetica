@@ -3,10 +3,6 @@ import { Fraunces, Manrope } from "next/font/google";
 
 import "./site.css";
 import { siteConfig } from "@/lib/siteConfig";
-import { businessJsonLd, personJsonLd } from "@/lib/seo";
-import JsonLd from "@/components/JsonLd";
-import TagManager from "@/components/TagManager";
-import ConsentBanner from "@/components/ConsentBanner";
 
 // Fontes servidas pelo próprio domínio: elimina o request ao Google Fonts
 // e o layout shift que ele causa enquanto a fonte não chega.
@@ -86,22 +82,17 @@ export const viewport: Viewport = {
   themeColor: "#4B5A45",
 };
 
+// Layout raiz do projeto inteiro — site público E painel do cliente. Só o que
+// é comum aos dois mora aqui: a marcação da página, as fontes e o CSS.
+//
+// A medição, o banner de consentimento e os dados estruturados do negócio
+// ficam em `app/(site)/layout.tsx`. Não os traga de volta para cá: o painel
+// nasce debaixo deste layout e passaria a carregar o container de tags do
+// próprio cliente, medindo o consultório enquanto ele lê o relatório.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR" className={`${fraunces.variable} ${manrope.variable}`}>
-      <body>
-        {/* Sinal de consentimento e container de tags. O consentimento padrão
-            é declarado antes do container carregar — inverter essa ordem faz a
-            primeira medição escapar do bloqueio. */}
-        <TagManager />
-
-        {children}
-        {/* Identidade do negócio e do profissional — vale para o site inteiro */}
-        <JsonLd data={[businessJsonLd(), personJsonLd()]} />
-
-        {/* Aviso de privacidade. Nenhuma coleta acontece antes da escolha. */}
-        <ConsentBanner />
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
