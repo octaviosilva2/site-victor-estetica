@@ -1,21 +1,27 @@
-import Cabecalho from "@/components/painel/Cabecalho";
+import Barras from "@/components/painel/Barras";
 import Cartao from "@/components/painel/Cartao";
-import Rosca from "@/components/painel/Rosca";
+import Estrutura from "@/components/painel/Estrutura";
+import FilaKpi, { type ItemKpi } from "@/components/painel/Kpi";
 import Rodape from "@/components/painel/Rodape";
+import Rosca from "@/components/painel/Rosca";
 import Tendencia from "@/components/painel/Tendencia";
+import TituloDaPagina from "@/components/painel/TituloDaPagina";
 import { visaoGeral } from "@/lib/painel/consultas";
 import { INSTANCIA, sinaisPorExtenso } from "@/lib/painel/instancia";
-import { canal, n, pct, plural, variacao } from "@/lib/painel/formato";
+import { explicarOrigem, n, pct, plural, variacao } from "@/lib/painel/formato";
 import { lerPeriodo } from "@/lib/painel/periodo";
 import { exigirAcesso } from "@/lib/painel/sessao";
 
 // PÁGINA 1 — Visão geral.
 // Pergunta que a página responde: o site está trazendo gente e gerando contato?
-// Indicadores 10, 2 e 7 de `08-matriz-do-dashboard.md`.
+// Indicadores 10, 2 e 7 de `08-matriz-do-dashboard.md`, mais a reapresentação
+// dos indicadores 8, 9 e 11 na forma de destaques.
 //
-// A ordem da tela responde a pergunta na ordem em que ela importa: o contato
-// primeiro, o alcance depois, a origem por último. Uma pilha de cartões de
-// igual peso obriga o leitor a descobrir sozinho por onde começar.
+// **Reapresentar não cria indicador.** Os três primeiros procedimentos e as
+// três primeiras áreas que aparecem aqui são o mesmo indicador 8 da página 3,
+// recortado. A nota está registrada na matriz para que a contagem de 17 não
+// pareça ter mudado — quem contar cartões nesta tela vai encontrar mais de 17,
+// e a explicação precisa existir escrita em algum lugar.
 
 export default async function VisaoGeral({
   searchParams,
@@ -23,212 +29,252 @@ export default async function VisaoGeral({
   searchParams: Promise<{ periodo?: string }>;
 }) {
   // Primeira linha, sempre. Nada é consultado antes de saber quem está lendo.
-  await exigirAcesso();
+  const { email } = await exigirAcesso();
 
   const periodo = lerPeriodo((await searchParams).periodo);
   const dados = await visaoGeral(periodo);
 
-  const taxa = pct(dados.sessoesComWhatsapp, dados.sessoes);
-  const variacaoSessoes = variacao(dados.sessoes, dados.sessoesAnterior);
-  const variacaoWhatsapp = variacao(
-    dados.cliquesWhatsapp,
-    dados.cliquesWhatsappAnterior,
-  );
-
-  // Quantas visitas, em média, para cada pedido de contato. É a mesma taxa
-  // dita ao contrário — e "a cada 12 visitas, uma conversa" é uma frase que o
-  // cliente usa, enquanto "8,3%" é uma que ele precisa converter na cabeça.
+  // Quantas visitas, em média, para cada pedido de contato. É a mesma taxa dita
+  // ao contrário — e "a cada 12 visitas, uma conversa" é uma frase que o cliente
+  // usa, enquanto "8,3%" é uma que ele precisa converter na cabeça.
   const visitasPorAcao =
     dados.sessoesComWhatsapp > 0
       ? Math.round(dados.sessoes / dados.sessoesComWhatsapp)
       : 0;
 
-  const maiorCanal = dados.canais[0];
+  const maiorOrigem = dados.origens[0];
+  const serieVisitas = dados.serie.map((p) => p.sessoes);
+
+  const kpis: ItemKpi[] = [
+    {
+      rotulo: "Visitas ao site",
+      valor: n(dados.sessoes),
+      variacao: variacao(dados.sessoes, dados.sessoesAnterior),
+      nota: `${n(dados.sessoesAnterior)} no período anterior`,
+      serie: serieVisitas,
+      limite:
+        "Uma visita é uma sessão, não uma pessoa: quem entra hoje e volta amanhã conta duas vezes. É o denominador de todas as taxas do painel.",
+    },
+    {
+      rotulo: "Usuários ativos",
+      valor: n(dados.usuariosAtivos),
+      variacao: variacao(dados.usuariosAtivos, dados.usuariosAtivosAnterior),
+      nota: `${n(dados.usuariosAtivosAnterior)} no período anterior`,
+      serie: dados.serie.map((p) => p.usuarios),
+      limite:
+        "Não é o número de pessoas diferentes. Quem visita do celular e depois do computador conta duas vezes. Nunca chame de visitantes únicos.",
+    },
+    {
+      rotulo: INSTANCIA.acaoImportante.nome,
+      valor: n(dados.cliquesWhatsapp),
+      tom: "acao",
+      variacao: variacao(dados.cliquesWhatsapp, dados.cliquesWhatsappAnterior),
+      nota: `${n(dados.cliquesWhatsappAnterior)} no período anterior`,
+      limite: `Clique não é ${INSTANCIA.acaoImportante.oQueNaoE}. Mede quantas vezes alguém saiu do site para o WhatsApp.`,
+    },
+    {
+      rotulo: "Taxa de ação importante",
+      valor: pct(dados.sessoesComWhatsapp, dados.sessoes),
+      tom: "acao",
+      nota: `${n(dados.sessoesComWhatsapp)} de ${n(dados.sessoes)} ${plural(
+        dados.sessoes,
+        "visita",
+        "visitas",
+      )}`,
+      limite:
+        "Não é taxa de venda nem de agendamento. Cliques no Instagram, no endereço e no Grupo VIP não entram nesta conta — são sinais de contexto.",
+    },
+    {
+      rotulo: "Chegada aos resultados",
+      valor: pct(dados.sessoesComResultados, dados.sessoes),
+      nota: `${n(dados.sessoesComResultados)} ${plural(
+        dados.sessoesComResultados,
+        "visita chegou",
+        "visitas chegaram",
+      )}`,
+      limite:
+        "Mede que a seção de antes e depois apareceu na tela. Não mede leitura, atenção nem tempo parado ali.",
+    },
+    {
+      rotulo: "Cliques em cards",
+      valor: n(dados.cliquesEmCards),
+      nota: "procedimentos e áreas somados",
+      limite:
+        "São cliques por procedimento e por área, não páginas mais vistas. Abrir o card não abre página nova — mede quem quis saber mais, não quem leu.",
+    },
+  ];
 
   return (
-    <>
-      <Cabecalho atual="/painel" periodo={periodo} />
+    <Estrutura usuario={email} periodo={periodo}>
+      <TituloDaPagina
+        secao="Visão geral"
+        titulo="O site está gerando contato?"
+        descricao={`A única ação importante desta implantação é o clique que abre o WhatsApp. Tudo nesta tela existe para responder se ele está acontecendo, e em que proporção.`}
+        periodo={periodo}
+        geradoEm={dados.geradoEm}
+      />
 
-      <main className="pnl-largura">
-        <div className="pnl-titulo">
-          <h1>O site está gerando contato?</h1>
-          <p>
-            A única ação importante desta implantação é o clique que abre o
-            WhatsApp. Tudo nesta tela existe para responder se ele está
-            acontecendo, e em que proporção.
+      {/* Regra 4 de `08-matriz-do-dashboard.md`: o aviso de consentimento é
+          obrigatório na primeira página. Sem ele, o cliente compara os números
+          com o movimento real do consultório e conclui que a medição está
+          errada. */}
+      <div className="aviso">
+        <p>
+          <b>Estes números representam quem aceitou a medição.</b> O site pergunta
+          a cada visitante se ele autoriza a coleta. Quem recusa não aparece em
+          nenhum número desta tela. O total real de visitas é maior do que o
+          exibido aqui, e isso é exigência da lei, não falha da medição.
+        </p>
+      </div>
+
+      <FilaKpi itens={kpis} colunas={6} />
+
+      <div className="grid grid-3 section-gap">
+        <Cartao
+          titulo="Visitas ao longo do período"
+          nota="Cada dia do período, comparado com a janela anterior"
+          largura={2}
+          etiqueta={
+            variacao(dados.sessoes, dados.sessoesAnterior) ? (
+              <span
+                className={`chip ${
+                  dados.sessoes >= dados.sessoesAnterior ? "good" : "warn"
+                }`}
+              >
+                {variacao(dados.sessoes, dados.sessoesAnterior)}
+              </span>
+            ) : null
+          }
+          limite="A linha tracejada é o mesmo número na janela imediatamente anterior, de igual duração. Com poucos dias medidos, as duas linhas dizem pouco: dois pontos sempre formam uma reta, e reta parece tendência."
+        >
+          <Tendencia serie={dados.serie} serieAnterior={dados.serieAnterior} />
+        </Cartao>
+
+        <Cartao
+          titulo="De onde vêm as visitas"
+          nota="Origem desdobrada por rede e por buscador"
+          leitura={
+            maiorOrigem ? (
+              <>
+                <b>{maiorOrigem.origem}</b> é hoje o maior caminho até o site
+                {explicarOrigem(maiorOrigem.origem)
+                  ? ` — ${explicarOrigem(maiorOrigem.origem)?.toLowerCase()}`
+                  : "."}{" "}
+                Se a intenção for crescer, é onde já existe tração; se for reduzir
+                dependência, é o que precisa de alternativa.
+              </>
+            ) : undefined
+          }
+          limite="É a origem da visita, não da pessoa. Quem chega hoje pela busca e volta amanhã pelo Instagram aparece nas duas fatias. A lista completa, com o que cada rótulo quer dizer, está em Interesse e público."
+        >
+          <Rosca
+            itens={dados.origens.map((o) => ({ nome: o.origem, valor: o.sessoes }))}
+            rotuloCentro="visitas"
+            vazio="Nenhuma visita registrada no período."
+          />
+        </Cartao>
+      </div>
+
+      <div className="grid grid-3 section-gap">
+        <Cartao
+          titulo="Procedimentos que mais despertam interesse"
+          nota="Os três primeiros. A lista com os 13 está em Interesse e público"
+          etiqueta={<span className="chip">Top 3</span>}
+          limite="São cliques nos cards de procedimento, não páginas mais vistas. Abrir o card não abre página nova."
+        >
+          <Barras
+            itens={dados.topProcedimentos.slice(0, 3).map((p) => ({
+              nome: p.nome || "Sem nome registrado",
+              valor: p.cliques,
+            }))}
+            vazio="Nenhum clique em procedimento no período."
+          />
+        </Cartao>
+
+        <Cartao
+          titulo="Áreas que mais atraem"
+          nota="As três primeiras. As cinco estão em Interesse e público"
+          etiqueta={<span className="chip">Top 3</span>}
+          limite="Área e procedimento ficam em listas separadas de propósito: “Estética Regenerativa” existe como área e como procedimento, e juntá-las diria um número que nunca aconteceu."
+        >
+          <Barras
+            itens={dados.topAreas.slice(0, 3).map((a) => ({
+              nome: a.nome || "Sem nome registrado",
+              valor: a.cliques,
+            }))}
+            vazio="Nenhum clique em área no período."
+          />
+        </Cartao>
+
+        {/* A ação importante e os sinais de contexto no mesmo cartão, mas
+            visualmente separados e sem nenhum total somando os dois. É a regra
+            1 da matriz aplicada ao desenho. */}
+        <Cartao
+          titulo="Ação importante e sinais de contexto"
+          nota="Duas famílias que nunca se somam"
+          tom="acao"
+          limite={`Não existe total combinando as duas colunas. ${INSTANCIA.acaoImportante.nome} é a única ação importante; ${sinaisPorExtenso()} dizem que a pessoa se interessou, não que procurou contato.`}
+        >
+          <dl className="metric-list">
+            <div className="metric">
+              <span>
+                {INSTANCIA.acaoImportante.nome}
+                <span className="explica" data-tip="A única ação importante desta implantação.">
+                  ?
+                </span>
+              </span>
+              <strong>{n(dados.cliquesWhatsapp)}</strong>
+              <small>
+                {visitasPorAcao > 0
+                  ? `A cada ${n(visitasPorAcao)} visitas, uma termina em pedido de contato.`
+                  : "Nenhum pedido de contato pelo site no período."}
+              </small>
+            </div>
+          </dl>
+
+          <p
+            className="card-note"
+            style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--line)" }}
+          >
+            Sinais de contexto — não entram na conta acima
           </p>
-        </div>
 
-        {/* Regra 4 de `08-matriz-do-dashboard.md`: o aviso de consentimento é
-            obrigatório na primeira página. Sem ele, o cliente compara os
-            números com o movimento real do consultório e conclui que a medição
-            está errada. */}
-        <div className="pnl-aviso">
-          <b>Estes números representam quem aceitou a medição.</b> O site
-          pergunta a cada visitante se ele autoriza a coleta. Quem recusa não
-          aparece em nenhum número desta tela. O total real de visitas é maior
-          do que o exibido aqui, e isso é exigência da lei, não falha da
-          medição.
-        </div>
+          <ul className="metric-list" style={{ marginTop: 10 }}>
+            <li className="metric">
+              <span>Cliques no Instagram</span>
+              <strong>{n(dados.instagram)}</strong>
+            </li>
+            <li className="metric">
+              <span>Cliques no endereço</span>
+              <strong>{n(dados.endereco)}</strong>
+            </li>
+            <li className="metric">
+              <span>Cliques para o Grupo VIP</span>
+              <strong>{n(dados.grupoVip)}</strong>
+            </li>
+          </ul>
+        </Cartao>
+      </div>
 
-        <section className="pnl-secao">
-          <h2>Contato gerado</h2>
-          <p className="pnl-secao-nota">
-            {INSTANCIA.acaoImportante.oQueE}.
-          </p>
-
-          <div className="pnl-grade pnl-grade-destaque">
-            <Cartao
-              rotulo={INSTANCIA.acaoImportante.nome}
-              valor={n(dados.cliquesWhatsapp)}
-              tom="acao"
-              destaque
-              comparacao={
-                variacaoWhatsapp ? (
-                  <>
-                    <b
-                      className={
-                        variacaoWhatsapp.startsWith("-") ? "pnl-desce" : "pnl-sobe"
-                      }
-                    >
-                      {variacaoWhatsapp}
-                    </b>{" "}
-                    em relação ao período anterior, que teve{" "}
-                    {n(dados.cliquesWhatsappAnterior)}
-                  </>
-                ) : (
-                  <>Ainda não há período anterior com dado para comparar.</>
-                )
-              }
-              leitura={
-                dados.cliquesWhatsapp === 0 ? (
-                  <>
-                    <b>Ninguém saiu do site para o WhatsApp neste período.</b> Se
-                    houve movimento no consultório, ele veio por outro caminho —
-                    e o site ainda não está participando dessa conversa.
-                  </>
-                ) : (
-                  <>
-                    <b>
-                      {n(dados.cliquesWhatsapp)}{" "}
-                      {plural(dados.cliquesWhatsapp, "pessoa saiu", "vezes alguém saiu")}{" "}
-                      do site para o WhatsApp.
-                    </b>{" "}
-                    A próxima pergunta é <b>de onde</b> esses cliques vieram — a
-                    aba Ações comerciais abre por posição na página e mostra qual
-                    convite está funcionando.
-                  </>
-                )
-              }
-              limite="Clique não é conversa iniciada, nem agendamento confirmado. Mede quantas vezes alguém saiu do site para o WhatsApp."
-            />
-
-            <Cartao
-              rotulo="Taxa de ações importantes"
-              valor={taxa}
-              tom="acao"
-              comparacao={
-                <>
-                  <b>{n(dados.sessoesComWhatsapp)}</b> de {n(dados.sessoes)}{" "}
-                  {plural(dados.sessoes, "visita", "visitas")}
-                </>
-              }
-              leitura={
-                visitasPorAcao > 0 ? (
-                  <>
-                    Hoje, a cada <b>{n(visitasPorAcao)} visitas</b> ao site, uma
-                    termina em pedido de contato.
-                  </>
-                ) : undefined
-              }
-              limite="Não é taxa de venda nem de agendamento. Cliques no Instagram, no endereço e no Grupo VIP não entram nesta conta."
-            />
-          </div>
-        </section>
-
-        {/* Bloco de contexto fixo, exigido pela matriz: o que conta como ação
-            importante nesta implantação. É texto, não número, e não muda com o
-            período. */}
-        <div className="pnl-aviso">
+      {/* Bloco de contexto fixo, exigido pela matriz: o que conta como ação
+          importante nesta implantação. É texto, não número, e não muda com o
+          período. */}
+      <div className="aviso contexto section-gap">
+        <p>
           <b>O que conta como ação importante.</b> Só o clique que abre o
-          WhatsApp — de qualquer ponto do site. Cliques em {sinaisPorExtenso()}{" "}
-          são <b>sinais de contexto</b>: dizem que a pessoa se interessou, mas
-          não que ela procurou contato. Eles aparecem marcados em azul-ciano nas
-          outras páginas e <b>nunca se somam</b> à ação importante.
-        </div>
-
-        <section className="pnl-secao">
-          <h2>Quanta gente o site alcançou</h2>
-          <p className="pnl-secao-nota">
-            É a base de comparação de todas as taxas do painel.
-          </p>
-
-          <div className="pnl-grade pnl-grade-2">
-            <Cartao
-              rotulo="Visitas ao site"
-              valor={n(dados.sessoes)}
-              comparacao={
-                variacaoSessoes ? (
-                  <>
-                    <b
-                      className={
-                        variacaoSessoes.startsWith("-") ? "pnl-desce" : "pnl-sobe"
-                      }
-                    >
-                      {variacaoSessoes}
-                    </b>{" "}
-                    em relação ao período anterior, que teve{" "}
-                    {n(dados.sessoesAnterior)}
-                  </>
-                ) : (
-                  <>Ainda não há período anterior com dado para comparar.</>
-                )
-              }
-              limite="Uma visita é uma sessão: a mesma pessoa pode gerar várias em dias diferentes. É o denominador de todas as taxas desta tela."
-            >
-              <Tendencia serie={dados.serie} />
-            </Cartao>
-
-            <Cartao
-              rotulo="Usuários ativos"
-              valor={n(dados.usuariosAtivos)}
-              limite="Não é o número de pessoas diferentes. Quem visita do celular e depois do computador conta duas vezes."
-            />
-          </div>
-        </section>
-
-        <section className="pnl-secao">
-          <h2>De onde vem quem chega</h2>
-          <p className="pnl-secao-nota">
-            Canal de origem das visitas no período.
-          </p>
-          <div className="pnl-cartao">
-            <Rosca
-              itens={dados.canais.map((c) => ({
-                nome: canal(c.canal),
-                valor: c.sessoes,
-              }))}
-              rotuloCentro="visitas"
-              vazio="Nenhuma visita registrada no período."
-            />
-            {maiorCanal ? (
-              <p className="pnl-leitura">
-                <b>{canal(maiorCanal.canal)}</b> é hoje o maior caminho até o
-                site. Se a intenção for crescer, é onde já existe tração; se for
-                reduzir dependência, é o que precisa de alternativa.
-              </p>
-            ) : null}
-            <p className="pnl-limite">
-              É a origem da visita, não da pessoa. Quem chega hoje pela busca e
-              volta amanhã pelo Instagram aparece nas duas fatias. &ldquo;Acesso
-              direto&rdquo; quer dizer que o navegador não informou a origem —
-              link salvo, endereço digitado ou aplicativo de mensagem.
-            </p>
-          </div>
-        </section>
-      </main>
+          WhatsApp — de qualquer ponto do site. Cliques em {sinaisPorExtenso()} são{" "}
+          <b>sinais de contexto</b>: dizem que a pessoa se interessou, mas não que
+          ela procurou contato.
+        </p>
+        <p>
+          Eles aparecem em <b>violeta</b> no painel inteiro, e a ação importante em{" "}
+          <b>azul</b>. As duas cores existem para lembrar de uma coisa só:{" "}
+          <b>elas nunca se somam</b>. Um total de “interações” juntando as duas
+          famílias seria um número que não corresponde a nada.
+        </p>
+      </div>
 
       <Rodape geradoEm={dados.geradoEm} />
-    </>
+    </Estrutura>
   );
 }

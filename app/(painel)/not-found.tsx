@@ -9,14 +9,14 @@ import Link from "next/link";
 
 export default function PainelNaoEncontrado() {
   return (
-    <div className="pnl-entrada">
-      <div className="pnl-entrada-caixa">
+    <div className="entrada">
+      <div className="entrada-caixa">
         <h1>Página não encontrada</h1>
         <p>
           Este endereço não faz parte do painel. Se você chegou por um link
           antigo, volte para a visão geral.
         </p>
-        <Link className="pnl-botao" href="/painel">
+        <Link className="botao" href="/painel">
           Ir para o painel
         </Link>
       </div>

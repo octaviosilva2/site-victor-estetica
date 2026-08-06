@@ -1,803 +1,1802 @@
-/* Estilo do PAINEL. Carregado apenas pelo layout de `(painel)`.
+/* Painel do cliente — folha única.
  *
- * ===========================================================================
- * IDENTIDADE: ESCALE IA, NÃO O CLIENTE
- * ===========================================================================
+ * ============================================================================
+ * DE ONDE VEIO ESTE ARQUIVO
+ * ============================================================================
  *
- * Até 2026-08-06 este arquivo herdava a paleta do site do Victor. O painel
- * parecia uma página a mais do consultório. Ele não é: é produto da Escale IA,
- * entregue como instância a um cliente (decisão D7 de `05-escopo-contratado.md`).
- * Os valores abaixo vêm dos tokens canônicos da marca, em
- * `empresas-arquivos/ESCALE-IA/4-Marca/tokens/`, v1.2.0 — onde cada par
- * texto/fundo já foi medido em WCAG 2.1. Não invente cor aqui: se faltar uma,
- * ela existe lá.
+ * Os tokens, a estrutura de aplicação (barra lateral escura, barra superior
+ * fixa, cartões em grade) e todas as formas de gráfico são copiados da
+ * demonstração comercial aprovada, em
+ * `implantação-dados-site/MATERIAL/demonstracao/index.html`. Não é inspiração:
+ * é o mesmo desenho, com os mesmos valores. Se algo aqui divergir daquele
+ * arquivo, o errado é este.
  *
- * O que é do cliente é o conteúdo, e ele entra por `lib/painel/instancia.ts`.
- * Nenhuma cor deste arquivo muda de cliente para cliente.
+ * O que NÃO veio de lá, de propósito:
  *
- * ===========================================================================
- * AS DUAS FAMÍLIAS DE COR CARREGAM SIGNIFICADO
- * ===========================================================================
+ * - **A camada de IA.** `.y-launch`, `.y-orb`, `.y-analysis`, o chat lateral,
+ *   as sugestões e o histórico. Decisão do Octavio em 06/08: o painel não
+ *   afirma nada que não tenha sido medido, e "o que a IA observou" é
+ *   exatamente isso.
+ * - **Marca de agência.** Não existe nome, logotipo nem assinatura da Escale IA
+ *   em lugar nenhum da tela. A decisão D7 continua valendo — ela fala de
+ *   CÓDIGO reutilizável, via `lib/painel/instancia.ts`, não de marca visível.
+ *   Quem aparece no topo é o cliente.
  *
- *   --pnl-acao      (#4F46E5, índigo)  AÇÃO IMPORTANTE — só o WhatsApp
- *   --pnl-contexto  (#00C2FF, ciano)   SINAL DE CONTEXTO — Instagram, endereço,
- *                                      Grupo VIP
+ * ============================================================================
+ * AS DUAS FAMÍLIAS DE COR — ISTO É CONTRATO, NÃO ESTÉTICA
+ * ============================================================================
  *
- * A regra de `08-matriz-do-dashboard.md` é que ação importante e sinal de
- * contexto **nunca se somam**. A cor é a forma de a regra continuar visível
- * depois que ninguém lembrar mais dela: dois números da mesma cor podem ser
- * lidos juntos, dois de cores diferentes não.
+ * Regra 1 de `08-matriz-do-dashboard.md`: **ação importante e sinal de contexto
+ * nunca se somam.** A cor é o que mantém essa regra visível na tela depois que
+ * ninguém mais lembrar dela:
  *
- * **Por que o ciano não pinta algarismo.** Ele mede 2.07:1 sobre branco e
- * reprova o mínimo de 3:1 exigido até para texto grande — os próprios tokens
- * proíbem usá-lo como texto ou borda de controle em fundo claro. Então a
- * família de contexto se marca por **área**: faixa do cartão, preenchimento de
- * barra, ponto do rótulo. O número em si fica em tinta.
+ *   --accent (#246bfd, azul)    → AÇÃO IMPORTANTE. Cliques no WhatsApp.
+ *   --purple (#7158d9, violeta) → SINAL DE CONTEXTO. Instagram, endereço,
+ *                                 Grupo VIP.
  *
- * Isso não enfraquece a distinção; reforça a hierarquia. O número que importa
- * — a ação — é o único colorido da tela. Os sinais de contexto ficam
- * reconhecíveis pela faixa, e discretos pelo algarismo neutro.
+ * A de ação é a cor primária do painel inteiro — é ela que pinta o traço do
+ * gráfico, a barra cheia e o estado ativo da navegação. A de contexto só
+ * aparece onde há sinal de contexto. Duas listas de cores diferentes na mesma
+ * tela são o aviso de que uma não entra na conta da outra.
  *
- * Todo seletor é prefixado `pnl-` para não alcançar o site institucional, que
- * compartilha a mesma folha de estilo base.
+ * As duas medem contraste suficiente para pintar algarismo nos dois temas — o
+ * que não acontecia com o ciano da paleta anterior, que era 2.07:1 sobre branco
+ * e por isso só podia marcar área. Aqui a distinção é por matiz, e não por
+ * tratamento.
+ *
+ * Nunca pinte um total combinando as duas. Não existe "total de interações".
  */
 
-.pnl-corpo {
-  /* --- Cor: camada semântica dos tokens da Escale IA ---------------------- */
-  --pnl-canvas: #f5f6fa;
-  --pnl-superficie: #ffffff;
-  --pnl-superficie-fundo: #f5f6fa;
+/* ==========================================================================
+   1. Tokens
+   ========================================================================== */
 
-  --pnl-tinta: #111318;
-  --pnl-tinta-2: #4a5260; /* 7.87:1 sobre branco */
-  --pnl-tinta-3: #5c6575; /* 5.88:1 sobre branco, 5.44:1 sobre Ice */
+.pnl-raiz {
+  --bg: #f3f5f8;
+  --surface: #fff;
+  --surface-2: #f8fafc;
+  --surface-3: #eef2f7;
+  --text: #152033;
+  --muted: #637087;
+  --subtle: #8c97a9;
+  --line: #e2e7ef;
+  --line-strong: #d3dae5;
+  --nav: #10192b;
+  --nav-2: #172238;
+  --nav-text: #aeb8c9;
+  --accent: #246bfd;
+  --accent-2: #0f54e8;
+  --accent-soft: #edf3ff;
+  --green: #168566;
+  --green-soft: #e9f7f2;
+  --orange: #c57218;
+  --orange-soft: #fff4e5;
+  --red: #d14e5b;
+  --red-soft: #fff0f1;
+  --purple: #7158d9;
+  --purple-soft: #f0edfc;
+  --shadow: 0 1px 2px rgba(19, 33, 58, 0.03), 0 8px 28px rgba(19, 33, 58, 0.05);
+  --radius: 16px;
+  --sidebar: 248px;
+  color-scheme: light;
+}
 
-  --pnl-borda: #dde1e7;
-  --pnl-borda-forte: #868fa0; /* >= 3:1: obrigatório em controle */
+html[data-theme="dark"] .pnl-raiz {
+  --bg: #0d1422;
+  --surface: #141e2e;
+  --surface-2: #182335;
+  --surface-3: #202c40;
+  --text: #edf2fa;
+  --muted: #9ba8bc;
+  --subtle: #768399;
+  --line: #273449;
+  --line-strong: #34435b;
+  --nav: #090f1b;
+  --nav-2: #111b2c;
+  --accent: #6e9bff;
+  --accent-2: #8badff;
+  --accent-soft: #1c3158;
+  --green: #56c9a4;
+  --green-soft: #16382f;
+  --orange: #f2b15e;
+  --orange-soft: #402d19;
+  --red: #f17b85;
+  --red-soft: #44242b;
+  --purple: #ad9bff;
+  --purple-soft: #241f3d;
+  --shadow: 0 12px 36px rgba(0, 0, 0, 0.16);
+  color-scheme: dark;
+}
 
-  --pnl-acao: #4f46e5;
-  --pnl-acao-forte: #3730a3;
-  --pnl-acao-superficie: #e0e7ff;
+/* ==========================================================================
+   2. Base
+   ========================================================================== */
 
-  --pnl-contexto: #00c2ff;
-  --pnl-contexto-superficie: rgb(0 194 255 / 12%);
+.pnl-raiz * {
+  box-sizing: border-box;
+}
 
-  --pnl-alerta: #b45309;
-  --pnl-alerta-superficie: #fef3c7;
+.pnl-raiz {
+  scroll-behavior: smooth;
+}
 
-  /* --- Forma ------------------------------------------------------------- */
-  --pnl-raio: 12px;
-  --pnl-raio-card: 20px;
-  --pnl-sombra: 0 1px 2px rgb(17 19 24 / 8%);
-  --pnl-sombra-alta: 0 10px 30px rgb(17 19 24 / 10%);
-
-  font-family: var(--font-manrope), system-ui, sans-serif;
-  background: var(--pnl-canvas);
-  color: var(--pnl-tinta);
+/* O `<body>` é comum ao site e ao painel, e o do site vem com cor e textura
+   próprias. Em vez de disputar o body, o wrapper do painel cobre a tela
+   inteira: `min-height: 100vh` garante que o fundo do painel apareça mesmo
+   quando o conteúdo é curto. */
+.pnl-raiz {
   min-height: 100vh;
-  padding-bottom: 56px;
+  margin: 0;
+  overflow-x: clip;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+  letter-spacing: -0.01em;
 }
 
-.pnl-largura {
-  max-width: 1120px;
-  margin: 0 auto;
-  padding: 0 20px;
+/* As variáveis de fonte que `next/font/local` gera são declaradas no elemento
+   que recebe a classe — o wrapper do layout do painel, não o `<body>`, que é
+   comum ao site. Por isso a família se aplica aqui e não lá: uma variável CSS
+   não sobe para o ancestral. */
+.pnl-raiz {
+  font-family: var(--font-geist), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.pnl-corpo :focus-visible {
-  outline: 2px solid var(--pnl-acao);
+/* ---------------------------------------------------------------------------
+   NEUTRALIZAÇÃO DO site.css — leia antes de apagar
+   ---------------------------------------------------------------------------
+
+   `app/site.css` é importado no LAYOUT RAIZ (`app/layout.tsx`), que é comum ao
+   site e ao painel. Ele carrega nas rotas do painel também, e declara cinco
+   seletores de ELEMENTO que alcançam esta interface:
+
+       html · body · h1,h2,h3 · nav · section · footer
+
+   Escopar o painel sob `.pnl-raiz` resolve a maior parte, porque especificidade
+   maior vence. Mas não resolve o caso em que o painel **não declara** a
+   propriedade: aí não há disputa nenhuma, e a regra do site simplesmente vale.
+   Foi o que aconteceu com o título — o `h1` do painel saiu em Fraunces, a fonte
+   do consultório, porque herdar perde para regra explícita.
+
+   Este bloco existe para devolver ao painel o que o site tinha definido. Se um
+   dia o site ganhar um seletor de elemento novo, ele aparece aqui também.
+   Conferir com:
+
+       grep -oE '(^|[};])\s*[a-z][a-z0-9]*(\s*,\s*[a-z][a-z0-9]*)*\s*\{' app/site.css
+
+   A alternativa — tirar o `site.css` do layout raiz — mexeria no site, e o
+   escopo desta sessão é explicitamente não tocar nele.
+   --------------------------------------------------------------------------- */
+
+.pnl-raiz h1,
+.pnl-raiz h2,
+.pnl-raiz h3,
+.pnl-raiz h4 {
+  font-family: inherit;
+}
+
+.pnl-raiz nav {
+  position: static;
+  top: auto;
+  z-index: auto;
+  background: none;
+  backdrop-filter: none;
+  border-bottom: 0;
+}
+
+.pnl-raiz section {
+  padding: 0;
+}
+
+.pnl-raiz footer {
+  padding: 0;
+  text-align: left;
+}
+
+.pnl-raiz button,
+.pnl-raiz select,
+.pnl-raiz input {
+  font: inherit;
+}
+
+.pnl-raiz button {
+  color: inherit;
+}
+
+.pnl-raiz a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.pnl-raiz button:focus-visible,
+.pnl-raiz select:focus-visible,
+.pnl-raiz input:focus-visible,
+.pnl-raiz a:focus-visible {
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
-  border-radius: 4px;
 }
 
-/* ===========================================================================
-   Cabeçalho
-   =========================================================================== */
-
-.pnl-topo {
-  background: var(--pnl-superficie);
-  border-bottom: 1px solid var(--pnl-borda);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+.pnl-raiz .app {
+  min-height: 100vh;
 }
-.pnl-topo-linha {
+
+/* ==========================================================================
+   3. Barra lateral
+   ========================================================================== */
+
+.pnl-raiz .sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--sidebar);
+  padding: 22px 14px 18px;
+  background: var(--nav);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  z-index: 30;
+  overflow-y: auto;
+}
+
+/* O topo da barra leva o nome do CLIENTE. Ele sai de
+   `lib/painel/instancia.ts` — nenhum nome próprio está escrito no CSS nem nos
+   componentes. */
+.pnl-raiz .brand {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 0 10px;
+  gap: 11px;
+  padding: 0 9px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* A marca da agência primeiro, o cliente depois — é o painel da Escale IA
-   servindo o cliente, e não o contrário. */
-.pnl-marca {
+.pnl-raiz .brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #70a2ff, #2d6cfc 55%, #1748c7);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 7px 20px rgba(36, 107, 253, 0.25);
+  flex: none;
+}
+
+.pnl-raiz .brand-mark svg {
+  width: 21px;
+  height: 21px;
+}
+
+.pnl-raiz .brand-copy {
+  min-width: 0;
+}
+
+.pnl-raiz .brand-copy strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.pnl-raiz .brand-copy span {
+  display: block;
+  margin-top: 2px;
+  color: #8795aa;
+  font-size: 10.5px;
+}
+
+.pnl-raiz .account {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-width: 0;
+  margin: 17px 3px 12px;
+  padding: 11px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.035);
 }
-.pnl-marca-simbolo {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #00c2ff 0%, #4f46e5 55%, #7c3aed 100%);
-  flex-shrink: 0;
-}
-.pnl-marca-texto {
-  min-width: 0;
-}
-.pnl-marca-nome {
-  font-size: 13px;
+
+.pnl-raiz .account-logo {
+  width: 31px;
+  height: 31px;
+  border-radius: 9px;
+  background: #fff;
+  color: #12203a;
+  display: grid;
+  place-items: center;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--pnl-tinta);
-  line-height: 1.2;
-  margin: 0;
+  font-size: 11px;
+  flex: none;
 }
-.pnl-marca-cliente {
+
+.pnl-raiz .account div {
+  min-width: 0;
+}
+
+.pnl-raiz .account strong,
+.pnl-raiz .account span {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pnl-raiz .account strong {
   font-size: 12px;
-  color: var(--pnl-tinta-3);
-  margin: 2px 0 0;
-  line-height: 1.2;
+  font-weight: 550;
+}
+
+.pnl-raiz .account span {
+  color: #8090a8;
+  font-size: 10px;
+  margin-top: 2px;
+}
+
+.pnl-raiz .nav-label {
+  padding: 14px 12px 6px;
+  color: #69788e;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pnl-raiz .nav-list {
+  display: grid;
+  gap: 3px;
+}
+
+.pnl-raiz .nav-button {
+  width: 100%;
+  height: 39px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--nav-text);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 11px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 500;
+  transition: 0.16s ease;
+}
+
+.pnl-raiz .nav-button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.pnl-raiz .nav-button[aria-current="page"] {
+  color: #fff;
+  background: var(--nav-2);
+  box-shadow: inset 2px 0 var(--accent);
+}
+
+.pnl-raiz .nav-button svg {
+  width: 17px;
+  height: 17px;
+  flex: none;
+  opacity: 0.85;
+}
+
+.pnl-raiz .sidebar-bottom {
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 7px 0;
+}
+
+.pnl-raiz .health {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8997aa;
+  font-size: 10.5px;
+}
+
+.pnl-raiz .health i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #43cb99;
+  box-shadow: 0 0 0 4px rgba(67, 203, 153, 0.1);
+  flex: none;
+}
+
+.pnl-raiz .user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.pnl-raiz .avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #273653;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  flex: none;
+}
+
+.pnl-raiz .user div {
+  min-width: 0;
+}
+
+.pnl-raiz .user strong,
+.pnl-raiz .user span {
+  display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.pnl-sair {
-  background: none;
-  border: 1px solid var(--pnl-borda-forte);
-  border-radius: 999px;
-  padding: 7px 14px;
-  font: inherit;
-  font-size: 12px;
-  color: var(--pnl-tinta-2);
-  cursor: pointer;
-  white-space: nowrap;
-}
-.pnl-sair:hover {
-  border-color: var(--pnl-acao);
-  color: var(--pnl-acao);
+
+.pnl-raiz .user strong {
+  font-size: 11px;
 }
 
-/* Abas. Rolagem lateral no celular em vez de quebra de linha. */
-.pnl-abas {
-  display: flex;
-  gap: 2px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.pnl-raiz .user span {
+  font-size: 9.5px;
+  color: #78879c;
 }
-.pnl-abas::-webkit-scrollbar {
-  display: none;
-}
-.pnl-aba {
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--pnl-tinta-2);
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-}
-.pnl-aba:hover {
-  color: var(--pnl-acao);
-}
-.pnl-aba[aria-current="page"] {
-  color: var(--pnl-acao);
-  border-bottom-color: var(--pnl-acao);
+
+.pnl-raiz .sair {
+  margin-top: 12px;
+  width: 100%;
+  height: 31px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  background: transparent;
+  color: #8997aa;
+  font-size: 10.5px;
   font-weight: 600;
+  cursor: pointer;
+  transition: 0.16s ease;
 }
 
-/* ===========================================================================
-   Seletor de período
-   =========================================================================== */
+.pnl-raiz .sair:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+}
 
-.pnl-periodo {
+/* ==========================================================================
+   4. Barra superior
+   ========================================================================== */
+
+.pnl-raiz .main {
+  min-height: 100vh;
+  margin-left: var(--sidebar);
+}
+
+.pnl-raiz .topbar {
+  height: 66px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent;
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  padding: 18px 0 0;
+  justify-content: space-between;
+  padding: 0 30px;
 }
-.pnl-periodo-opcoes {
+
+.pnl-raiz .topbar.scrolled {
+  border-color: var(--line);
+}
+
+.pnl-raiz .crumb {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 0;
 }
-.pnl-periodo-opcao {
-  padding: 7px 13px;
-  border: 1px solid var(--pnl-borda);
-  border-radius: 999px;
-  background: var(--pnl-superficie);
-  font-size: 13px;
-  color: var(--pnl-tinta-2);
-  text-decoration: none;
-  white-space: nowrap;
-}
-.pnl-periodo-opcao:hover {
-  border-color: var(--pnl-acao);
-  color: var(--pnl-acao);
-}
-.pnl-periodo-opcao[aria-current="true"] {
-  background: var(--pnl-acao);
-  border-color: var(--pnl-acao);
-  color: #ffffff;
+
+.pnl-raiz .crumb strong {
+  color: var(--text);
   font-weight: 600;
 }
 
-/* Escolher um mês. `<details>` em vez de menu com JavaScript: o painel inteiro
-   funciona sem script, e um seletor de período não é motivo para mudar isso. */
-.pnl-meses {
-  position: relative;
+.pnl-raiz .crumb i {
+  font-style: normal;
+  color: var(--subtle);
 }
-.pnl-meses > summary {
-  padding: 7px 13px;
-  border: 1px solid var(--pnl-borda);
-  border-radius: 999px;
-  background: var(--pnl-superficie);
-  font-size: 13px;
-  color: var(--pnl-tinta-2);
+
+.pnl-raiz .top-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.pnl-raiz .period {
+  height: 35px;
+  padding: 0 31px 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 11.5px;
+  outline: none;
   cursor: pointer;
-  white-space: nowrap;
-  list-style: none;
 }
-.pnl-meses > summary::-webkit-details-marker {
+
+.pnl-raiz .icon-btn {
+  width: 35px;
+  height: 35px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: none;
+}
+
+.pnl-raiz .icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.pnl-raiz .menu-btn {
   display: none;
 }
-.pnl-meses[open] > summary {
-  border-color: var(--pnl-acao);
-  color: var(--pnl-acao);
-}
-.pnl-meses-lista {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 6px);
-  left: 0;
-  min-width: 190px;
-  max-height: 260px;
-  overflow-y: auto;
-  background: var(--pnl-superficie);
-  border: 1px solid var(--pnl-borda);
-  border-radius: var(--pnl-raio);
-  box-shadow: var(--pnl-sombra-alta);
-  padding: 6px;
-}
-.pnl-meses-lista a {
-  display: block;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--pnl-tinta-2);
-  text-decoration: none;
-}
-.pnl-meses-lista a:hover {
-  background: var(--pnl-acao-superficie);
-  color: var(--pnl-acao-forte);
-}
-.pnl-meses-lista a[aria-current="true"] {
-  background: var(--pnl-acao);
-  color: #ffffff;
-  font-weight: 600;
+
+.pnl-raiz .menu-backdrop {
+  display: none;
 }
 
-/* A linha que diz o que o período escolhido cobre de verdade. Regra 8 de
-   `08-matriz-do-dashboard.md` — ver `Cabecalho.tsx`. */
-.pnl-periodo-alcance {
-  font-size: 12.5px;
-  color: var(--pnl-tinta-3);
-  margin: 10px 0 0;
-  line-height: 1.5;
-}
-.pnl-periodo-alcance b {
-  color: var(--pnl-tinta);
-  font-weight: 600;
+/* ==========================================================================
+   5. Conteúdo e cabeçalho de página
+   ========================================================================== */
+
+.pnl-raiz .content {
+  width: min(1500px, 100%);
+  margin: 0 auto;
+  padding: 28px 30px 48px;
 }
 
-/* ===========================================================================
-   Hierarquia: título de página, seção, cartão
-   =========================================================================== */
-
-.pnl-titulo {
-  margin: 22px 0 0;
+.pnl-raiz .page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
 }
-.pnl-titulo h1 {
-  font-size: 24px;
-  line-height: 1.2;
+
+.pnl-raiz .eyebrow {
+  margin: 0 0 5px;
+  color: var(--accent);
+  font-size: 10px;
   font-weight: 700;
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-.pnl-titulo p {
-  font-size: 14px;
-  color: var(--pnl-tinta-2);
-  margin: 6px 0 0;
-  line-height: 1.5;
-  max-width: 62ch;
-}
-
-.pnl-secao {
-  margin: 26px 0 0;
-}
-.pnl-secao > h2 {
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  margin: 0 0 3px;
-}
-.pnl-secao-nota {
-  font-size: 13px;
-  color: var(--pnl-tinta-3);
-  margin: 0 0 12px;
-  line-height: 1.5;
-  max-width: 70ch;
-}
-
-.pnl-grade {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: 1fr;
-}
-@media (min-width: 700px) {
-  .pnl-grade-2 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .pnl-grade-3 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  /* O primeiro cartão ocupa o dobro: é a leitura guiada da página. */
-  .pnl-grade-destaque {
-    grid-template-columns: 1.35fr 1fr;
-  }
-}
-
-.pnl-cartao {
-  background: var(--pnl-superficie);
-  border: 1px solid var(--pnl-borda);
-  border-radius: var(--pnl-raio-card);
-  padding: 16px 18px;
-  box-shadow: var(--pnl-sombra);
-  /* A faixa de família nasce transparente e é pintada pelo tom. */
-  border-top: 3px solid transparent;
-}
-.pnl-cartao-acao {
-  border-top-color: var(--pnl-acao);
-}
-.pnl-cartao-contexto {
-  border-top-color: var(--pnl-contexto);
-}
-
-.pnl-cartao-rotulo {
-  font-size: 11px;
-  letter-spacing: 0.09em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
-  color: var(--pnl-tinta-3);
-  font-weight: 700;
+}
+
+.pnl-raiz h1 {
   margin: 0;
+  font-size: clamp(25px, 3vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+  font-weight: 650;
+}
+
+.pnl-raiz .page-sub {
+  margin: 7px 0 0;
+  max-width: 680px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.pnl-raiz .updated {
   display: flex;
   align-items: center;
   gap: 7px;
-}
-/* Ponto de família ao lado do rótulo: repete a informação da faixa para quem
-   lê o cartão isolado, fora do contexto da grade. */
-.pnl-ponto {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-.pnl-ponto-acao {
-  background: var(--pnl-acao);
-}
-.pnl-ponto-contexto {
-  background: var(--pnl-contexto);
-}
-
-.pnl-numero {
-  font-size: 34px;
-  font-weight: 700;
-  line-height: 1.05;
-  margin: 12px 0 0;
-  color: var(--pnl-tinta);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-/* Só a ação importante é colorida. Ver o cabeçalho deste arquivo. */
-.pnl-numero-acao {
-  color: var(--pnl-acao);
-}
-.pnl-numero-grande {
-  font-size: 46px;
-}
-
-.pnl-comparacao {
-  font-size: 12.5px;
-  color: var(--pnl-tinta-3);
-  margin: 8px 0 0;
-  line-height: 1.5;
-}
-.pnl-comparacao b {
-  font-weight: 700;
-  color: var(--pnl-tinta);
-}
-.pnl-sobe {
-  color: #15803d;
-  font-weight: 700;
-}
-.pnl-desce {
-  color: #b91c1c;
-  font-weight: 700;
-}
-
-/* A leitura: o que fazer com o número. Fica ACIMA da linha de limite porque
-   é o que o cliente procura; o limite é a ressalva, não a mensagem. */
-.pnl-leitura {
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--pnl-tinta-2);
-  margin: 12px 0 0;
-  padding: 10px 12px;
-  background: var(--pnl-superficie-fundo);
-  border-radius: 10px;
-  border-left: 3px solid var(--pnl-acao);
-}
-.pnl-leitura b {
-  color: var(--pnl-tinta);
-  font-weight: 700;
-}
-
-/* A linha que diz o que o número NÃO significa. Obrigatória em todo cartão que
-   possa ser mal lido — regra 2 de `08-matriz-do-dashboard.md`. */
-.pnl-limite {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--pnl-tinta-3);
-  margin: 12px 0 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--pnl-borda);
-}
-
-/* A diferença entre o total e a soma das partes, quando existe. Regra 7. */
-.pnl-diferenca {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--pnl-alerta);
-  background: var(--pnl-alerta-superficie);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin: 12px 0 0;
-}
-.pnl-diferenca b {
-  font-weight: 700;
-}
-
-/* ===========================================================================
-   Barras horizontais
-   =========================================================================== */
-
-.pnl-barras {
-  display: flex;
-  flex-direction: column;
-  gap: 11px;
-  margin: 14px 0 0;
-  list-style: none;
-  padding: 0;
-}
-.pnl-barra-topo {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 10px;
-  font-size: 13px;
-  margin-bottom: 5px;
-}
-.pnl-barra-nome {
-  color: var(--pnl-tinta);
-  overflow-wrap: anywhere;
-}
-.pnl-barra-valor {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-.pnl-barra-parte {
-  font-weight: 400;
-  color: var(--pnl-tinta-3);
-  font-size: 12px;
-  margin-left: 5px;
-}
-.pnl-barra-trilho {
-  height: 9px;
-  background: var(--pnl-superficie-fundo);
-  border-radius: 999px;
-  overflow: hidden;
-}
-.pnl-barra-preenchimento {
-  height: 100%;
-  background: var(--pnl-acao);
-  border-radius: 999px;
-}
-.pnl-barra-preenchimento.contexto {
-  background: var(--pnl-contexto);
-}
-/* A barra vencedora ganha peso — leitura guiada em vez de lista plana. */
-.pnl-barras li:first-child .pnl-barra-nome {
-  font-weight: 700;
-}
-
-/* ===========================================================================
-   Rosca de origem
-   =========================================================================== */
-
-.pnl-rosca-bloco {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-}
-.pnl-rosca {
-  width: 148px;
-  height: 148px;
-  flex-shrink: 0;
-}
-.pnl-rosca-centro-numero {
-  font-size: 26px;
-  font-weight: 700;
-  fill: var(--pnl-tinta);
-}
-.pnl-rosca-centro-rotulo {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  fill: var(--pnl-tinta-3);
-}
-.pnl-legenda {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  min-width: 190px;
-  flex: 1;
-}
-.pnl-legenda li {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 13px;
-}
-.pnl-legenda-cor {
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-.pnl-legenda-nome {
-  flex: 1;
-  color: var(--pnl-tinta);
-  overflow-wrap: anywhere;
-}
-.pnl-legenda-valor {
-  font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  color: var(--subtle);
+  font-size: 10.5px;
   white-space: nowrap;
 }
-.pnl-legenda-valor span {
-  font-weight: 400;
-  color: var(--pnl-tinta-3);
-  margin-left: 5px;
+
+.pnl-raiz .updated i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  flex: none;
 }
 
-/* ===========================================================================
-   Tendência
-   =========================================================================== */
+/* ==========================================================================
+   6. Grade e cartão
+   ========================================================================== */
 
-.pnl-tendencia-bloco {
+.pnl-raiz .grid {
+  display: grid;
+  gap: 14px;
+}
+
+.pnl-raiz .grid-6 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.pnl-raiz .grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pnl-raiz .grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pnl-raiz .grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pnl-raiz .span-2 {
+  grid-column: span 2;
+}
+
+.pnl-raiz .span-3 {
+  grid-column: span 3;
+}
+
+.pnl-raiz .section-gap {
   margin-top: 14px;
 }
-.pnl-tendencia {
-  display: block;
+
+.pnl-raiz .card {
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 19px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.pnl-raiz .card:hover {
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+  box-shadow: 0 2px 4px rgba(19, 33, 58, 0.04), 0 12px 34px rgba(19, 33, 58, 0.075);
+  transform: translateY(-1px);
+}
+
+/* As duas famílias de cor. Uma faixa fina no topo do cartão — o suficiente
+   para agrupar visualmente sem competir com o número. */
+.pnl-raiz .card-acao {
+  border-top: 2px solid var(--accent);
+}
+
+.pnl-raiz .card-contexto {
+  border-top: 2px solid var(--purple);
+}
+
+.pnl-raiz .card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.pnl-raiz .card-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.pnl-raiz .card-note {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+}
+
+.pnl-raiz .chip {
+  display: inline-flex;
+  align-items: center;
+  height: 23px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex: none;
+}
+
+.pnl-raiz button.chip,
+.pnl-raiz a.chip {
+  cursor: pointer;
+}
+
+.pnl-raiz .chip.good {
+  background: var(--green-soft);
+  color: var(--green);
+}
+
+.pnl-raiz .chip.warn {
+  background: var(--orange-soft);
+  color: var(--orange);
+}
+
+.pnl-raiz .chip.acao {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pnl-raiz .chip.contexto {
+  background: var(--purple-soft);
+  color: var(--purple);
+}
+
+/* ==========================================================================
+   7. KPI
+   ========================================================================== */
+
+.pnl-raiz .kpi {
+  min-height: 130px;
+  justify-content: space-between;
+}
+
+.pnl-raiz .kpi-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.pnl-raiz .kpi-value {
+  margin-top: 12px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: clamp(22px, 2.1vw, 29px);
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: -0.055em;
+}
+
+.pnl-raiz .kpi-value.acao {
+  color: var(--accent);
+}
+
+.pnl-raiz .kpi-value.contexto {
+  color: var(--purple);
+}
+
+.pnl-raiz .kpi-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--subtle);
+  font-size: 9.5px;
+  margin-top: 10px;
+}
+
+.pnl-raiz .delta {
+  color: var(--green);
+  font-weight: 600;
+}
+
+.pnl-raiz .delta.down {
+  color: var(--red);
+}
+
+.pnl-raiz .delta.neutral {
+  color: var(--muted);
+}
+
+.pnl-raiz .micro {
+  width: 52px;
+  height: 18px;
+  flex: none;
+}
+
+.pnl-raiz .micro path {
+  fill: none;
+  stroke: var(--green);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pnl-raiz .micro.down path {
+  stroke: var(--red);
+}
+
+.pnl-raiz .micro.flat path {
+  stroke: var(--line-strong);
+}
+
+/* ==========================================================================
+   8. Gráfico de linha
+   ========================================================================== */
+
+.pnl-raiz .chart-wrap {
+  height: 260px;
+  position: relative;
+}
+
+.pnl-raiz .line-chart {
   width: 100%;
-  height: 116px;
+  height: 100%;
   overflow: visible;
 }
-.pnl-tendencia-eixo {
+
+.pnl-raiz .gridline {
+  stroke: var(--line);
+  stroke-width: 1;
+  fill: none;
+}
+
+.pnl-raiz .axis-label {
+  fill: var(--subtle);
+  font-size: 9px;
+}
+
+.pnl-raiz .area {
+  fill: url(#areaGradient);
+}
+
+.pnl-raiz .trend {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pnl-raiz .trend-compare {
+  fill: none;
+  stroke: var(--line-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 5;
+}
+
+.pnl-raiz .point {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+
+.pnl-raiz .col {
+  fill: var(--accent);
+}
+
+.pnl-raiz .col-compare {
+  fill: var(--line-strong);
+}
+
+.pnl-raiz .legend {
   display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: var(--pnl-tinta-3);
-  margin-top: 6px;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ===========================================================================
-   Tabelas
-   =========================================================================== */
-
-.pnl-tabela {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 14px;
-  font-size: 13px;
-}
-.pnl-tabela th,
-.pnl-tabela td {
-  text-align: left;
-  padding: 10px;
-  border-bottom: 1px solid var(--pnl-borda);
-}
-.pnl-tabela th {
-  font-size: 11px;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--pnl-tinta-3);
-  font-weight: 700;
-}
-.pnl-tabela td.num,
-.pnl-tabela th.num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-.pnl-tabela tbody tr:last-child td {
-  border-bottom: none;
-}
-.pnl-rolagem {
-  overflow-x: auto;
-}
-
-/* ===========================================================================
-   Mapa de calor
-   =========================================================================== */
-
-.pnl-calor {
-  border-collapse: collapse;
-  margin-top: 14px;
+  gap: 16px;
+  align-items: center;
+  margin-top: 8px;
+  color: var(--muted);
   font-size: 10px;
+  flex-wrap: wrap;
 }
-.pnl-calor td,
-.pnl-calor th {
+
+.pnl-raiz .legend span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pnl-raiz .legend i {
+  width: 14px;
+  height: 2px;
+  background: var(--accent);
+  flex: none;
+}
+
+.pnl-raiz .legend i.old {
+  height: 0;
+  border-top: 2px dashed var(--line-strong);
+  background: none;
+}
+
+/* ==========================================================================
+   9. Barras horizontais
+   ========================================================================== */
+
+.pnl-raiz .bars {
+  display: grid;
+  gap: 13px;
+  margin: 0;
   padding: 0;
-  text-align: center;
+  list-style: none;
 }
-.pnl-calor th {
-  color: var(--pnl-tinta-3);
-  font-weight: 700;
-  padding: 2px 5px;
+
+.pnl-raiz .bar-row {
+  display: grid;
+  grid-template-columns: minmax(95px, 1.2fr) 2.3fr 66px;
+  gap: 10px;
+  align-items: center;
+  font-size: 10.5px;
+}
+
+.pnl-raiz .bar-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
+}
+
+.pnl-raiz .bar-track {
+  height: 7px;
+  border-radius: 9px;
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.pnl-raiz .bar-fill {
+  width: var(--w);
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  opacity: var(--o, 1);
+}
+
+.pnl-raiz .bar-fill.contexto {
+  background: var(--purple);
+}
+
+.pnl-raiz .bar-value {
+  text-align: right;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
   white-space: nowrap;
 }
-.pnl-calor-celula {
-  width: 14px;
-  height: 16px;
-  border-radius: 3px;
+
+.pnl-raiz .bar-value span {
+  color: var(--subtle);
+  margin-left: 5px;
+  font-size: 9px;
+}
+
+/* ==========================================================================
+   10. Rosca
+   ========================================================================== */
+
+.pnl-raiz .donut-layout {
+  display: grid;
+  grid-template-columns: 145px 1fr;
+  align-items: center;
+  gap: 19px;
+}
+
+.pnl-raiz .donut {
+  width: 140px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(var(--fatias));
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.pnl-raiz .donut:after {
+  content: "";
+  width: 79px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.pnl-raiz .donut-center {
+  position: absolute;
+  text-align: center;
+  z-index: 1;
+}
+
+.pnl-raiz .donut-center strong {
   display: block;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 17px;
+  font-weight: 500;
 }
 
-/* ===========================================================================
-   Avisos
-   =========================================================================== */
-
-.pnl-aviso {
-  background: var(--pnl-superficie);
-  border: 1px solid var(--pnl-borda);
-  border-left: 3px solid var(--pnl-acao);
-  border-radius: var(--pnl-raio);
-  padding: 14px 16px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: var(--pnl-tinta-2);
-  margin: 16px 0 0;
-}
-.pnl-aviso b {
-  color: var(--pnl-tinta);
-  font-weight: 700;
-}
-.pnl-aviso-espera {
-  border-left-color: var(--pnl-contexto);
-}
-.pnl-aviso-atencao {
-  border-left-color: var(--pnl-alerta);
-  background: var(--pnl-alerta-superficie);
-  border-color: #f0dcae;
+.pnl-raiz .donut-center span {
+  font-size: 8.5px;
+  color: var(--subtle);
 }
 
-.pnl-vazio {
-  font-size: 13px;
-  color: var(--pnl-tinta-3);
-  margin: 14px 0 0;
+.pnl-raiz .donut-list {
+  display: grid;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pnl-raiz .donut-item {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.pnl-raiz .donut-item i {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: var(--c);
+}
+
+.pnl-raiz .donut-item strong {
+  color: var(--text);
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   11. Tabela
+   ========================================================================== */
+
+.pnl-raiz .table-wrap {
+  overflow: auto;
+  margin: 0 -4px;
+}
+
+.pnl-raiz table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.pnl-raiz th {
+  padding: 0 10px 9px;
+  text-align: left;
+  color: var(--subtle);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pnl-raiz td {
+  padding: 11px 10px;
+  border-top: 1px solid var(--line);
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.pnl-raiz td:first-child {
+  color: var(--text);
+  font-weight: 500;
+  white-space: normal;
+}
+
+.pnl-raiz td.num,
+.pnl-raiz th.num {
+  text-align: right;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.pnl-raiz tr:hover td {
+  background: var(--surface-2);
+}
+
+.pnl-raiz .status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pnl-raiz .status:before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--subtle);
+}
+
+.pnl-raiz .status.good {
+  color: var(--green);
+}
+
+.pnl-raiz .status.good:before {
+  background: var(--green);
+}
+
+.pnl-raiz .status.warn {
+  color: var(--orange);
+}
+
+.pnl-raiz .status.warn:before {
+  background: var(--orange);
+}
+
+/* ==========================================================================
+   12. Listas de contexto
+   ========================================================================== */
+
+.pnl-raiz .metric-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pnl-raiz .metric {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+}
+
+.pnl-raiz .metric:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.pnl-raiz .metric:last-child {
+  padding-bottom: 0;
+}
+
+.pnl-raiz .metric > span {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.pnl-raiz .metric strong {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+}
+
+.pnl-raiz .metric small {
+  grid-column: 1 / -1;
+  color: var(--subtle);
+  font-size: 9px;
   line-height: 1.5;
 }
 
-/* ===========================================================================
-   Rodapé
-   =========================================================================== */
-
-.pnl-rodape {
-  margin-top: 40px;
-  padding-top: 16px;
-  border-top: 1px solid var(--pnl-borda);
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--pnl-tinta-3);
-}
-.pnl-rodape-marca {
-  margin-top: 12px;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--pnl-tinta-3);
-  font-weight: 700;
+.pnl-raiz .progress-list {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-/* ===========================================================================
-   Tela de entrada
-   =========================================================================== */
+.pnl-raiz .progress-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: 10.5px;
+}
 
-.pnl-entrada {
-  min-height: 100vh;
+.pnl-raiz .progress-top span {
+  color: var(--muted);
+}
+
+.pnl-raiz .progress-top strong {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.pnl-raiz .progress-track {
+  height: 7px;
+  background: var(--surface-3);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pnl-raiz .progress-fill {
+  height: 100%;
+  width: var(--w);
+  background: var(--accent);
+  border-radius: inherit;
+}
+
+.pnl-raiz .progress-fill.contexto {
+  background: var(--purple);
+}
+
+/* ==========================================================================
+   13. Funil
+   ========================================================================== */
+
+.pnl-raiz .funnel {
+  display: grid;
+  gap: 9px;
+}
+
+.pnl-raiz .funnel-row {
+  display: grid;
+  grid-template-columns: 175px 1fr 65px;
+  align-items: center;
+  gap: 11px;
+}
+
+.pnl-raiz .funnel-label strong,
+.pnl-raiz .funnel-label span {
+  display: block;
+}
+
+.pnl-raiz .funnel-label strong {
+  font-size: 10.5px;
+}
+
+.pnl-raiz .funnel-label span {
+  color: var(--subtle);
+  font-size: 8.5px;
+  margin-top: 1px;
+}
+
+.pnl-raiz .funnel-track {
+  height: 31px;
+  background: var(--surface-3);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.pnl-raiz .funnel-fill {
+  height: 100%;
+  width: var(--w);
+  min-width: 46px;
+  background: color-mix(in srgb, var(--accent) var(--op), var(--surface));
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: var(--pnl-canvas);
+  padding-left: 10px;
+  color: #fff;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 9.5px;
+  border-radius: inherit;
 }
-.pnl-entrada-caixa {
-  background: var(--pnl-superficie);
-  border: 1px solid var(--pnl-borda);
-  border-radius: var(--pnl-raio-card);
-  box-shadow: var(--pnl-sombra-alta);
-  padding: 30px 26px;
-  max-width: 390px;
+
+.pnl-raiz .funnel-rate {
+  text-align: right;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   14. Barras verticais por hora e mapa de calor
+   ========================================================================== */
+
+.pnl-raiz .hour-chart {
+  height: 170px;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding-top: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.pnl-raiz .hour {
+  flex: 1;
+  height: var(--h);
+  min-width: 4px;
+  background: var(--accent);
+  opacity: 0.38;
+  border-radius: 3px 3px 0 0;
+}
+
+.pnl-raiz .hour.peak {
+  opacity: 1;
+}
+
+.pnl-raiz .hour-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--subtle);
+  font-size: 8px;
+  padding-top: 6px;
+}
+
+.pnl-raiz .calor {
+  border-collapse: separate;
+  border-spacing: 2px;
   width: 100%;
+  white-space: nowrap;
+}
+
+.pnl-raiz .calor th {
+  padding: 0 0 4px;
+  font-size: 7.5px;
+  letter-spacing: 0;
+}
+
+.pnl-raiz .calor th[scope="row"] {
+  padding: 0 6px 0 0;
+  text-align: right;
+  font-size: 8.5px;
+}
+
+.pnl-raiz .calor td {
+  padding: 0;
+  border: 0;
+}
+
+.pnl-raiz .calor td:hover {
+  background: none;
+}
+
+.pnl-raiz .calor-celula {
+  display: block;
+  width: 100%;
+  min-width: 11px;
+  height: 15px;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   15. Blocos de leitura — os textos que a matriz exige
+   ========================================================================== */
+
+/* Regra 2 de `08-matriz-do-dashboard.md`: o que o número NÃO significa.
+   É a linha que impede a leitura errada, e a propriedade que a alimenta é
+   obrigatória no componente `Cartao` de propósito. */
+.pnl-raiz .limite {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--subtle);
+  font-size: 9.5px;
+  line-height: 1.5;
+}
+
+/* O que fazer com o número. Vem ACIMA do limite: a orientação é o que o
+   cliente procura, a ressalva vem depois dela e não no lugar dela. */
+.pnl-raiz .leitura {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 10.5px;
+  line-height: 1.55;
+}
+
+.pnl-raiz .leitura b {
+  color: var(--text);
+}
+
+/* Regra 7: quando a soma das partes não bate com o total, a diferença aparece
+   escrita, na tela. */
+.pnl-raiz .diferenca {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--orange) 30%, var(--line));
+  border-radius: 10px;
+  background: var(--orange-soft);
+  color: var(--text);
+  font-size: 9.5px;
+  line-height: 1.55;
+}
+
+/* Aviso de consentimento e bloco de contexto fixo. */
+.pnl-raiz .aviso {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  box-shadow: var(--shadow);
+}
+
+.pnl-raiz .aviso.contexto {
+  border-left-color: var(--purple);
+}
+
+.pnl-raiz .aviso b {
+  color: var(--text);
+}
+
+.pnl-raiz .aviso p {
+  margin: 0;
+}
+
+.pnl-raiz .aviso p + p {
+  margin-top: 7px;
+}
+
+.pnl-raiz .vazio {
+  margin: 0;
+  padding: 18px 0;
+  color: var(--subtle);
+  font-size: 10.5px;
   text-align: center;
 }
-.pnl-entrada-simbolo {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
-  background: linear-gradient(135deg, #00c2ff 0%, #4f46e5 55%, #7c3aed 100%);
-  margin: 0 auto 16px;
-}
-.pnl-entrada-caixa h1 {
-  font-size: 21px;
-  font-weight: 700;
-  margin: 0 0 6px;
-}
-.pnl-entrada-caixa p {
-  font-size: 13px;
-  color: var(--pnl-tinta-2);
-  line-height: 1.55;
-  margin: 0 0 20px;
-}
-.pnl-botao {
+
+/* Explicação de rótulo. O ícone dá o atalho por passagem do ponteiro; o
+   glossário ao pé da página existe visível porque em celular não há hover
+   nenhum e a explicação não pode depender dele. */
+.pnl-raiz .explica {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  width: 100%;
-  padding: 12px 18px;
-  border: none;
-  border-radius: 999px;
-  background: var(--pnl-acao);
-  color: #ffffff;
-  font: inherit;
-  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  margin-left: 5px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--subtle);
+  font-size: 8px;
   font-weight: 700;
+  cursor: help;
+  flex: none;
+}
+
+/* O bloco expansível que acompanha toda fila de KPI. Fechado por padrão para
+   não competir com os números; aberto, é a explicação de cada um por extenso —
+   e é ela que garante que a informação exista sem depender de hover. */
+.pnl-raiz .explicacoes {
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.pnl-raiz .explicacoes > summary {
+  padding: 11px 16px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
   cursor: pointer;
+  list-style: none;
 }
-.pnl-botao:hover {
-  background: var(--pnl-acao-forte);
+
+.pnl-raiz .explicacoes > summary::-webkit-details-marker {
+  display: none;
 }
-.pnl-erro {
-  background: #fee2e2;
-  border: 1px solid #f5b9b9;
+
+.pnl-raiz .explicacoes > summary:before {
+  content: "＋ ";
+  color: var(--accent);
+}
+
+.pnl-raiz .explicacoes[open] > summary {
+  border-bottom: 1px solid var(--line);
+}
+
+.pnl-raiz .explicacoes[open] > summary:before {
+  content: "－ ";
+}
+
+.pnl-raiz .explicacoes .glossario {
+  padding: 14px 16px;
+}
+
+.pnl-raiz .glossario {
+  margin: 0;
+  padding: 0;
+}
+
+.pnl-raiz .glossario div {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+
+.pnl-raiz .glossario div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.pnl-raiz .glossario dt {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pnl-raiz .glossario dd {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 9.5px;
+  line-height: 1.55;
+}
+
+/* ==========================================================================
+   16. Tooltip flutuante
+   ========================================================================== */
+
+.pnl-raiz .tooltip {
+  position: fixed;
+  z-index: 100;
+  pointer-events: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #0d1627;
+  color: #fff;
+  font-size: 9px;
+  line-height: 1.45;
+  max-width: 260px;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: 0.12s;
+}
+
+.pnl-raiz .tooltip.show {
+  opacity: 1;
+  transform: none;
+}
+
+/* ==========================================================================
+   17. Rodapé
+   ========================================================================== */
+
+.pnl-raiz .footer {
+  display: grid;
+  gap: 6px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  color: var(--subtle);
+  font-size: 9.5px;
+  line-height: 1.55;
+}
+
+.pnl-raiz .footer p {
+  margin: 0;
+}
+
+.pnl-raiz .footer b {
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   18. Tela de entrada
+   ========================================================================== */
+
+.pnl-raiz .entrada {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.pnl-raiz .entrada-caixa {
+  width: min(420px, 100%);
+  padding: 32px 30px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+
+.pnl-raiz .entrada-simbolo {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 18px;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #70a2ff, #2d6cfc 55%, #1748c7);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 7px 20px rgba(36, 107, 253, 0.25);
+}
+
+.pnl-raiz .entrada-simbolo svg {
+  width: 25px;
+  height: 25px;
+}
+
+.pnl-raiz .entrada-caixa h1 {
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+.pnl-raiz .entrada-caixa p {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.pnl-raiz .botao {
+  width: 100%;
+  height: 42px;
+  margin-top: 20px;
+  border: 0;
   border-radius: 10px;
-  padding: 12px 14px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #b91c1c;
-  margin: 0 0 18px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.16s ease;
+}
+
+.pnl-raiz .botao:hover {
+  background: var(--accent-2);
+}
+
+.pnl-raiz .erro {
+  margin-top: 16px !important;
+  padding: 11px 13px;
+  border: 1px solid color-mix(in srgb, var(--red) 32%, var(--line));
+  border-radius: 10px;
+  background: var(--red-soft);
+  color: var(--text) !important;
+  font-size: 10.5px !important;
   text-align: left;
+}
+
+/* ==========================================================================
+   19. Pontos de quebra — todos os da demonstração
+   ========================================================================== */
+
+@media (max-width: 1250px) {
+  .pnl-raiz .grid-6 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .pnl-raiz .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pnl-raiz .span-3 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 900px) {
+  .pnl-raiz {
+    --sidebar: 222px;
+  }
+  .pnl-raiz .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pnl-raiz .grid-3 > .span-2 {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 720px) {
+  body.nav-open {
+    overflow: hidden;
+  }
+  .pnl-raiz .sidebar {
+    width: min(288px, calc(100vw - 52px));
+    padding-top: max(22px, env(safe-area-inset-top));
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+    transform: translateX(-100%);
+    transition: 0.2s;
+  }
+  .pnl-raiz .sidebar.open {
+    transform: none;
+    box-shadow: 18px 0 50px rgba(0, 0, 0, 0.25);
+  }
+  .pnl-raiz .menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background: rgba(7, 13, 24, 0.32);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .pnl-raiz .menu-backdrop.open {
+    display: block;
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .pnl-raiz .main {
+    margin-left: 0;
+  }
+  .pnl-raiz .menu-btn {
+    display: grid;
+  }
+  .pnl-raiz .crumb {
+    min-width: 0;
+    flex: 1;
+    gap: 8px;
+  }
+  .pnl-raiz .crumb strong {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .pnl-raiz .crumb > span,
+.pnl-raiz .crumb > i {
+    display: none;
+  }
+  .pnl-raiz .topbar {
+    min-height: 68px;
+    height: calc(68px + env(safe-area-inset-top));
+    gap: 8px;
+    padding: env(safe-area-inset-top) max(14px, env(safe-area-inset-right)) 0
+      max(14px, env(safe-area-inset-left));
+  }
+  .pnl-raiz .top-actions {
+    flex: none;
+  }
+  .pnl-raiz .period,
+.pnl-raiz .icon-btn {
+    height: 40px;
+  }
+  .pnl-raiz .icon-btn {
+    width: 40px;
+  }
+  .pnl-raiz .content {
+    padding: 20px 14px max(36px, env(safe-area-inset-bottom));
+  }
+  .pnl-raiz .card {
+    padding: 16px;
+  }
+  .pnl-raiz .grid-6,
+.pnl-raiz .grid-4,
+.pnl-raiz .grid-3,
+.pnl-raiz .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .pnl-raiz .grid-3 > .span-2,
+.pnl-raiz .span-2,
+.pnl-raiz .span-3 {
+    grid-column: span 1;
+  }
+  .pnl-raiz .page-head {
+    align-items: flex-start;
+  }
+  .pnl-raiz .updated {
+    display: none;
+  }
+  .pnl-raiz .chart-wrap {
+    height: 220px;
+  }
+  .pnl-raiz .donut-layout {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+  .pnl-raiz .donut {
+    width: 116px;
+  }
+  .pnl-raiz .funnel-row {
+    grid-template-columns: 120px minmax(0, 1fr) 48px;
+  }
+}
+
+@media (max-width: 460px) {
+  .pnl-raiz .period {
+    max-width: 136px;
+  }
+  .pnl-raiz .kpi {
+    min-height: 122px;
+  }
+  .pnl-raiz .kpi-value {
+    font-size: 22px;
+  }
+  .pnl-raiz .bar-row {
+    grid-template-columns: minmax(70px, 1fr) 1.6fr 62px;
+  }
+}
+
+@media (max-width: 420px) {
+  .pnl-raiz .crumb strong {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pnl-raiz * {
+    scroll-behavior: auto !important;
+    animation: none !important;
+    transition: none !important;
+  }
 }

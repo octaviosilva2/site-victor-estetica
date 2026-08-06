@@ -5,12 +5,16 @@ import { INSTANCIA } from "@/lib/painel/instancia";
 
 // Tela de entrada do painel.
 //
-// É também a tela de erro do Auth.js (`pages.error` em `auth.ts`). A tela
-// padrão da biblioteca é em inglês e fala em "provider" e "callback" — o
-// cliente não tem por que entender esses termos, e um erro sem explicação vira
-// telefonema.
+// É também a tela de erro do Auth.js (`pages.error` em `auth.ts`). A tela padrão
+// da biblioteca é em inglês e fala em "provider" e "callback" — o cliente não
+// tem por que entender esses termos, e um erro sem explicação vira telefonema.
+//
+// **Nenhuma marca de agência.** O título era "Painel Escale IA" até 06/08. Quem
+// abre esta tela é o cliente, e o que ele precisa reconhecer é o próprio nome.
 
-export const metadata = { title: { absolute: "Entrar — Painel Dr. Victor Folster" } };
+export const metadata = {
+  title: { absolute: `Entrar — Painel ${INSTANCIA.cliente}` },
+};
 
 /** Traduz os motivos que podem chegar pela URL. */
 function mensagem(motivo: string | undefined): string | null {
@@ -45,16 +49,26 @@ export default async function Entrar({
   const aviso = mensagem(motivo ?? error);
 
   return (
-    <div className="pnl-entrada">
-      <div className="pnl-entrada-caixa">
-        <span className="pnl-entrada-simbolo" aria-hidden="true" />
-        <h1>Painel Escale IA</h1>
+    <div className="entrada">
+      <div className="entrada-caixa">
+        <span className="entrada-simbolo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path
+              d="M5 17.5 10.7 6l3.1 6.1L16 8l3 9.5"
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        <h1>{INSTANCIA.cliente}</h1>
         <p>
-          Os números do site de {INSTANCIA.cliente}. O acesso é restrito a uma
-          conta Google.
+          {INSTANCIA.subtitulo}. O acesso é restrito a uma conta Google
+          autorizada.
         </p>
 
-        {aviso ? <p className="pnl-erro">{aviso}</p> : null}
+        {aviso ? <p className="erro">{aviso}</p> : null}
 
         <form
           action={async () => {
@@ -62,14 +76,14 @@ export default async function Entrar({
             await signIn("google", { redirectTo: "/painel" });
           }}
         >
-          <button type="submit" className="pnl-botao">
+          <button type="submit" className="botao">
             Entrar com a conta Google
           </button>
         </form>
 
-        <p style={{ marginTop: 18, marginBottom: 0, fontSize: 12 }}>
-          Pedimos ao Google apenas o seu nome e endereço de e-mail, para saber
-          quem está entrando. Nada da sua conta é lido.
+        <p style={{ marginTop: 18, fontSize: 10.5 }}>
+          Pedimos ao Google apenas o seu nome e endereço de e-mail, para saber quem
+          está entrando. Nada da sua conta é lido.
         </p>
       </div>
     </div>

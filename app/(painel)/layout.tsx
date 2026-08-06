@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 
 import "@/app/painel.css";
 
@@ -13,8 +14,37 @@ import "@/app/painel.css";
 // registraria uma visita. Os números do painel passariam a incluir quem os lê.
 //
 // `(painel)` é um route group — não aparece na URL. As rotas reais continuam
-// sendo `/painel`, `/painel/acoes` e `/painel/interesse`, e o `middleware.ts`
-// cuida de elas só responderem no subdomínio.
+// sendo `/painel`, `/painel/acoes`, `/painel/interesse` e `/painel/ads`, e o
+// `middleware.ts` cuida de elas só responderem no subdomínio.
+
+// As fontes da demonstração, servidas do próprio domínio.
+//
+// **Só aqui, nunca no layout raiz.** O site institucional tem tipografia
+// própria (Fraunces e Manrope) e não deve baixar mais duas famílias por causa
+// do painel. Declaradas neste layout, os arquivos entram apenas nas rotas de
+// `(painel)`.
+const geist = localFont({
+  src: [
+    { path: "../../public/fonts/Geist-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/Geist-500.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/Geist-600.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/Geist-700.woff2", weight: "700", style: "normal" },
+  ],
+  display: "swap",
+  variable: "--font-geist",
+});
+
+// A monoespaçada existe por um motivo funcional: algarismo de largura fixa.
+// Numa coluna de números, a fonte proporcional faz o "1" ocupar menos espaço
+// que o "8", e as casas deixam de se alinhar entre linhas.
+const geistMono = localFont({
+  src: [
+    { path: "../../public/fonts/GeistMono-400.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/GeistMono-500.woff2", weight: "500", style: "normal" },
+  ],
+  display: "swap",
+  variable: "--font-geist-mono",
+});
 
 export const metadata: Metadata = {
   // `absolute` evita o sufixo com o nome do consultório que o layout raiz
@@ -40,10 +70,34 @@ export const metadata: Metadata = {
   twitter: null,
 };
 
+/**
+ * Aplica o tema salvo antes da primeira pintura.
+ *
+ * Sem isto, o painel abre claro e escurece um quadro depois — o clarão branco
+ * que todo painel de tema escuro dá quando a preferência só é lida depois da
+ * hidratação. Roda antes do React de propósito.
+ *
+ * O `try` não é decoração: em navegação privada de alguns navegadores, ler
+ * `localStorage` **lança**. Sem o `catch`, o erro derrubaria a página inteira
+ * por causa de uma preferência de cor.
+ */
+const TEMA_INICIAL = `
+try {
+  var t = localStorage.getItem("painel-tema");
+  if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  document.documentElement.dataset.theme = t;
+} catch (e) {}
+`;
+
 export default function PainelLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="pnl-corpo">{children}</div>;
+  return (
+    <div className={`pnl-raiz ${geist.variable} ${geistMono.variable}`}>
+      <script dangerouslySetInnerHTML={{ __html: TEMA_INICIAL }} />
+      {children}
+    </div>
+  );
 }

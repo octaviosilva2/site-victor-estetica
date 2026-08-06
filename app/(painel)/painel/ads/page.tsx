@@ -1,8 +1,10 @@
-import Cabecalho from "@/components/painel/Cabecalho";
 import Cartao from "@/components/painel/Cartao";
+import Estrutura from "@/components/painel/Estrutura";
+import FilaKpi, { type ItemKpi } from "@/components/painel/Kpi";
 import Rodape from "@/components/painel/Rodape";
+import TituloDaPagina from "@/components/painel/TituloDaPagina";
 import { googleAds } from "@/lib/painel/consultas";
-import { brl, n, pct, plural } from "@/lib/painel/formato";
+import { brl, n, pct, pctCurto, plural } from "@/lib/painel/formato";
 import { lerPeriodo } from "@/lib/painel/periodo";
 import { exigirAcesso } from "@/lib/painel/sessao";
 
@@ -10,28 +12,51 @@ import { exigirAcesso } from "@/lib/painel/sessao";
 // Pergunta que a página responde: a campanha está indo bem?
 // Indicadores 6, 15, 16, 17, 18 e 19 de `08-matriz-do-dashboard.md`.
 //
-// Entrou pelo **aditivo A2**, seção 13 de `05-escopo-contratado.md`. Antes
-// dele, o Google Ads era um bloco no rodapé da página 2, e o indicador 6 vivia
-// lá. O indicador é o mesmo, com o mesmo cálculo, em outro lugar.
+// Entrou pelo **aditivo A2**, seção 13 de `05-escopo-contratado.md`. Antes dele,
+// o Google Ads era um bloco no rodapé da página 2, e o indicador 6 vivia lá. O
+// indicador é o mesmo, com o mesmo cálculo, em outro lugar.
 //
-// **A página aparece mesmo sem veiculação**, com a mensagem de espera. Nunca
-// escondida — esconder faria parecer que a integração não existe — e nunca
-// preenchida com estimativa. Um zero aqui significaria "anunciou e não deu
-// resultado", que não é o caso enquanto nenhuma campanha rodou.
+// ============================================================================
+// A ESTRUTURA DA PÁGINA É FIXA. O CONTEÚDO É QUE VARIA
+// ============================================================================
+//
+// Os seis cartões, o cabeçalho da tabela de campanhas e o confronto entre pago
+// e não pago estão **sempre** na tela, veiculando ou não. É decisão do Octavio
+// em 06/08: o cliente precisa ver que a página existe, o que ela vai mostrar e
+// do que ela depende — uma tela que só aparece depois que há dado parece
+// integração quebrada até o dia em que aparece.
+//
+// O que muda é o preenchimento. Métrica que a plataforma não devolveu vira
+// **travessão com a razão escrita**, nunca zero: zero significaria "anunciou e
+// não gastou", que é uma afirmação, e nós não temos como fazê-la.
+//
+// **O limite que não dá para contornar, e por que o A3 foi arquivado.** O
+// Analytics só conhece campanha que trouxe sessão. Campanha pausada, ou
+// veiculando sem nenhum clique, **não volta como linha zerada — não volta
+// linha**. Listar as campanhas paradas exigiria a API do Google Ads, que é
+// fonte de dado nova: aditivo A3, escrito e arquivado no mesmo dia
+// (`A3-prompt-credenciais-google-ads.md`). Enquanto ele não for retomado, a
+// tabela mostra a linha de espera, e as campanhas entram sozinhas assim que
+// houver a primeira sessão vinda de anúncio — sem tocar em código.
+
+/** Formata, ou devolve travessão. Nunca zero para ausência de dado. */
+function ou(valor: number | null, formatar: (v: number) => string): string {
+  return valor === null ? "—" : formatar(valor);
+}
 
 export default async function GoogleAds({
   searchParams,
 }: {
   searchParams: Promise<{ periodo?: string }>;
 }) {
-  await exigirAcesso();
+  const { email } = await exigirAcesso();
 
   const periodo = lerPeriodo((await searchParams).periodo);
   const dados = await googleAds(periodo);
 
-  // "Veiculou" é ter trazido visita ou ter custado dinheiro. As duas coisas
-  // vêm de fontes diferentes e qualquer uma delas basta para a página ter o
-  // que mostrar.
+  // "Veiculou" é ter trazido visita ou ter custado dinheiro. As duas coisas vêm
+  // de fontes diferentes e qualquer uma delas basta para a página ter o que
+  // mostrar.
   const veiculou = dados.sessoes > 0 || (dados.investimento ?? 0) > 0;
 
   const custoPorAcao =
@@ -42,239 +67,253 @@ export default async function GoogleAds({
   const taxaPaga = pct(dados.sessoesComAcao, dados.sessoes);
   const taxaNaoPaga = pct(dados.naoPago.sessoesComAcao, dados.naoPago.sessoes);
 
-  return (
-    <>
-      <Cabecalho atual="/painel/ads" periodo={periodo} />
+  // A razão que acompanha cada travessão. Existem dois motivos diferentes para
+  // um número faltar aqui, e confundi-los levaria a conclusões opostas.
+  const razaoSemNumero = dados.custoIndisponivel
+    ? "O vínculo com o Google Ads não está devolvendo esta métrica."
+    : "Nenhuma campanha veiculou no período escolhido.";
 
-      <main className="pnl-largura">
-        <div className="pnl-titulo">
-          <h1>A campanha está indo bem?</h1>
+  const kpis: ItemKpi[] = [
+    {
+      rotulo: "Investimento no período",
+      valor: ou(dados.investimento, brl),
+      nota: dados.investimento === null ? razaoSemNumero : "valor cobrado pelo Google",
+      limite:
+        "Depende do vínculo entre o Google Ads e o Analytics estar ativo. Se ele cair, a métrica some inclusive para trás — não é gasto que desapareceu, é leitura que parou.",
+    },
+    {
+      rotulo: "Cliques no anúncio",
+      valor: ou(dados.cliquesNoAnuncio, n),
+      nota: dados.cliquesNoAnuncio === null ? razaoSemNumero : "cliques cobrados",
+      limite:
+        "Clique no anúncio não é visita no site. Quem clica e fecha antes de a página abrir conta aqui e não conta como visita. A diferença entre os dois números é normal.",
+    },
+    {
+      rotulo: "Impressões",
+      valor: ou(dados.impressoes, n),
+      nota: dados.impressoes === null ? razaoSemNumero : "vezes que o anúncio apareceu",
+      limite:
+        "Mede exibição do anúncio, não pessoas alcançadas. A mesma pessoa que vê o anúncio cinco vezes gera cinco impressões.",
+    },
+    {
+      rotulo: "Custo por clique",
+      valor: ou(dados.custoPorClique, brl),
+      nota: dados.custoPorClique === null ? razaoSemNumero : "investimento ÷ cliques",
+      limite:
+        "É o custo de trazer alguém até o site, não o de gerar contato nem o de conquistar um paciente.",
+    },
+    {
+      rotulo: "Visitas vindas de anúncio",
+      valor: n(dados.sessoes),
+      tom: "acao",
+      nota: veiculou
+        ? `${pctCurto(dados.sessoes, dados.sessoes + dados.naoPago.sessoes)} de todas as visitas`
+        : "nenhuma no período",
+      limite:
+        "São as visitas classificadas como origem paga pela plataforma. Elas também estão contadas no total da visão geral — esta página as olha por origem, não as separa do site.",
+    },
+    {
+      rotulo: "Pedidos de contato do anúncio",
+      valor: n(dados.acoes),
+      tom: "acao",
+      nota:
+        custoPorAcao !== null
+          ? `${brl(custoPorAcao)} por pedido de contato`
+          : "cliques no WhatsApp em visita paga",
+      limite:
+        "Custo por pedido de contato não é custo por paciente. Entre o clique no WhatsApp e a cadeira do consultório há a conversa, o orçamento e a agenda — nada disso é medido aqui.",
+    },
+  ];
+
+  return (
+    <Estrutura usuario={email} periodo={periodo}>
+      <TituloDaPagina
+        secao="Google Ads"
+        titulo="A campanha está indo bem?"
+        descricao="Tudo o que vem de anúncio pago, separado do resto do site. O que entra aqui não some da primeira página — são as mesmas visitas, olhadas por origem."
+        periodo={periodo}
+        geradoEm={dados.geradoEm}
+      />
+
+      {!veiculou ? (
+        <div className="aviso">
           <p>
-            Tudo o que vem de anúncio pago, separado do resto do site. O que
-            entra aqui não some da primeira página — são as mesmas visitas,
-            olhadas por origem.
+            <b>Aguardando veiculação.</b> A conta do Google Ads está vinculada e a
+            marcação automática está ativa, então tudo o que for investido aparece
+            aqui sozinho, sem nenhum ajuste. Até agora nenhuma campanha veiculou no
+            período escolhido.
+          </p>
+          <p>
+            Os cartões abaixo mostram <b>travessão</b>, e não zero, de propósito:
+            zero afirmaria &ldquo;anunciou e não gastou&rdquo;, e não foi isso que
+            aconteceu. A estrutura da página fica à mostra para que se saiba o que
+            ela vai responder no dia em que a primeira campanha rodar.
           </p>
         </div>
+      ) : null}
 
-        {!veiculou ? (
-          <>
-            <div className="pnl-aviso pnl-aviso-espera">
-              <b>Aguardando veiculação.</b> A conta do Google Ads está vinculada
-              e a marcação automática está ativa, então tudo o que for investido
-              aparecerá aqui sozinho. Até agora nenhuma campanha veiculou no
-              período escolhido. Enquanto isso, não há nada a mostrar — e um
-              zero nestes cartões significaria &ldquo;anunciou e não deu
-              resultado&rdquo;, que não é o caso.
-            </div>
+      <FilaKpi itens={kpis} colunas={6} />
 
-            <div className="pnl-aviso">
-              <b>O que esta página vai responder quando houver campanha.</b>{" "}
-              Quanto foi investido, quantas pessoas o anúncio trouxe, quanto
-              custou cada uma delas, quantos pedidos de contato vieram daí e a
-              que custo — e se quem chega por anúncio pede contato mais ou menos
-              do que quem chega pelo resto do site.
-            </div>
-          </>
-        ) : (
-          <>
-            <section className="pnl-secao">
-              <h2>O que o investimento gerou</h2>
-              <p className="pnl-secao-nota">
-                A ação importante continua sendo a mesma do resto do painel: o
-                clique que abre o WhatsApp.
-              </p>
+      <div className="grid grid-3 section-gap">
+        <Cartao
+          titulo="Campanha por campanha"
+          nota="Visitas, pedidos de contato e investimento de cada uma"
+          largura={2}
+          etiqueta={
+            <span className={`chip ${dados.campanhas.length > 0 ? "acao" : ""}`}>
+              {dados.campanhas.length > 0
+                ? `${n(dados.campanhas.length)} ${plural(
+                    dados.campanhas.length,
+                    "campanha",
+                    "campanhas",
+                  )}`
+                : "Aguardando veiculação"}
+            </span>
+          }
+          limite="Só aparece aqui a campanha que trouxe ao menos uma visita no período. Campanha pausada, ou no ar sem nenhum clique, não vem como linha zerada — não vem linha nenhuma, porque o Analytics só conhece campanha que gerou sessão. Campanha nova também leva dias para dizer qualquer coisa."
+        >
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Campanha</th>
+                  <th scope="col" className="num">
+                    Visitas
+                  </th>
+                  <th scope="col" className="num">
+                    Pedidos de contato
+                  </th>
+                  <th scope="col" className="num">
+                    Taxa
+                  </th>
+                  <th scope="col" className="num">
+                    Investimento
+                  </th>
+                  <th scope="col">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dados.campanhas.length === 0 ? (
+                  <tr>
+                    <td>Nenhuma campanha veiculou no período</td>
+                    <td className="num">—</td>
+                    <td className="num">—</td>
+                    <td className="num">—</td>
+                    <td className="num">—</td>
+                    <td>
+                      <span className="status warn">Aguardando</span>
+                    </td>
+                  </tr>
+                ) : (
+                  dados.campanhas.map((c) => (
+                    <tr key={c.campanha}>
+                      <td>{c.campanha || "Campanha sem nome registrado"}</td>
+                      <td className="num">{n(c.sessoes)}</td>
+                      <td className="num">{n(c.acoes)}</td>
+                      <td className="num">{pct(c.acoes, c.sessoes)}</td>
+                      <td className="num">{ou(c.custo, brl)}</td>
+                      <td>
+                        <span className={`status ${c.acoes > 0 ? "good" : ""}`}>
+                          {c.acoes > 0 ? "Gerando contato" : "Trazendo visita"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Cartao>
 
-              <div className="pnl-grade pnl-grade-destaque">
-                <Cartao
-                  rotulo="Ações vindas de anúncio"
-                  valor={n(dados.acoes)}
-                  tom="acao"
-                  destaque
-                  comparacao={
-                    <>
-                      de <b>{n(dados.sessoes)}</b>{" "}
-                      {plural(dados.sessoes, "visita paga", "visitas pagas")} no
-                      período
-                    </>
-                  }
-                  leitura={
-                    custoPorAcao !== null ? (
-                      <>
-                        Cada pedido de contato vindo de anúncio custou{" "}
-                        <b>{brl(custoPorAcao)}</b>. Compare com o que vale uma
-                        avaliação no consultório — é essa conta, e não o custo
-                        por clique, que diz se a campanha se paga.
-                      </>
-                    ) : dados.acoes === 0 ? (
-                      <>
-                        <b>
-                          O anúncio trouxe visita, mas nenhuma virou pedido de
-                          contato.
-                        </b>{" "}
-                        O problema não está em atrair — está no que a pessoa
-                        encontra depois do clique.
-                      </>
-                    ) : undefined
-                  }
-                  limite="Custo por ação não é custo por paciente. Mede o valor investido dividido pelos cliques no WhatsApp, e a atribuição do Google Ads pode levar dias para fechar."
-                />
-
-                <Cartao
-                  rotulo="Investimento no período"
-                  valor={
-                    dados.investimento === null ? "—" : brl(dados.investimento)
-                  }
-                  limite={
-                    dados.custoIndisponivel
-                      ? "A plataforma não está devolvendo o investimento neste momento. O campo fica vazio em vez de estimado — um zero aqui diria que nada foi gasto."
-                      : "Vem do vínculo com o Google Ads. Se o vínculo cair, esta métrica some, inclusive para períodos passados."
-                  }
+        <Cartao
+          titulo="Pago contra não pago"
+          nota="A mesma taxa de ação, calculada em cada origem"
+          tom="acao"
+          limite="As duas bases têm tamanhos muito diferentes. Em volume baixo, uma ação a mais no lado pago move a taxa em dezenas de pontos — leia tendência de meses, nunca a semana."
+        >
+          <ul className="progress-list">
+            <li>
+              <div className="progress-top">
+                <span>Visitas vindas de anúncio</span>
+                <strong>{taxaPaga}</strong>
+              </div>
+              <div className="progress-track">
+                <div
+                  className="progress-fill"
+                  style={{
+                    ["--w" as string]: `${
+                      dados.sessoes > 0
+                        ? Math.min((dados.sessoesComAcao / dados.sessoes) * 100, 100)
+                        : 0
+                    }%`,
+                  }}
                 />
               </div>
-            </section>
-
-            <section className="pnl-secao">
-              <h2>O anúncio sendo visto e clicado</h2>
-              <p className="pnl-secao-nota">
-                O caminho antes do site: quantas vezes o anúncio apareceu e
-                quantas alguém clicou nele.
-              </p>
-
-              <div className="pnl-grade pnl-grade-3">
-                <Cartao
-                  rotulo="Cliques no anúncio"
-                  valor={
-                    dados.cliquesNoAnuncio === null
-                      ? "—"
-                      : n(dados.cliquesNoAnuncio)
-                  }
-                  limite="Clique no anúncio não é visita ao site. Quem clica e fecha antes de a página carregar conta aqui e não conta lá — a diferença entre os dois números é normal."
-                />
-                <Cartao
-                  rotulo="Impressões"
-                  valor={dados.impressoes === null ? "—" : n(dados.impressoes)}
-                  limite="Quantas vezes o anúncio apareceu na tela de alguém. Não quer dizer que foi lido."
-                />
-                <Cartao
-                  rotulo="Custo por clique"
-                  valor={
-                    dados.custoPorClique === null
-                      ? "—"
-                      : brl(dados.custoPorClique)
-                  }
-                  limite="É o custo de trazer uma pessoa até o site, e não o de gerar um contato. O que decide investimento é o custo por ação, no cartão acima."
+            </li>
+            <li>
+              <div className="progress-top">
+                <span>Visitas de todo o resto</span>
+                <strong>{taxaNaoPaga}</strong>
+              </div>
+              <div className="progress-track">
+                <div
+                  className="progress-fill contexto"
+                  style={{
+                    ["--w" as string]: `${
+                      dados.naoPago.sessoes > 0
+                        ? Math.min(
+                            (dados.naoPago.sessoesComAcao / dados.naoPago.sessoes) * 100,
+                            100,
+                          )
+                        : 0
+                    }%`,
+                  }}
                 />
               </div>
-            </section>
+            </li>
+          </ul>
 
-            <section className="pnl-secao">
-              <h2>Anúncio contra o resto do site</h2>
-              <p className="pnl-secao-nota">
-                A mesma taxa da primeira página, calculada em separado para cada
-                origem.
-              </p>
+          <ul className="metric-list" style={{ marginTop: 18 }}>
+            <li className="metric">
+              <span>Visitas pagas</span>
+              <strong>{n(dados.sessoes)}</strong>
+            </li>
+            <li className="metric">
+              <span>Visitas não pagas</span>
+              <strong>{n(dados.naoPago.sessoes)}</strong>
+            </li>
+            <li className="metric">
+              <span>Custo por pedido de contato</span>
+              <strong>{ou(custoPorAcao, brl)}</strong>
+              <small>
+                {custoPorAcao === null
+                  ? razaoSemNumero
+                  : "Investimento dividido pelos cliques no WhatsApp em visita paga."}
+              </small>
+            </li>
+          </ul>
+        </Cartao>
+      </div>
 
-              <div className="pnl-grade pnl-grade-2">
-                <Cartao
-                  rotulo="Taxa de ação — vindo de anúncio"
-                  valor={taxaPaga}
-                  tom="acao"
-                  comparacao={
-                    <>
-                      <b>{n(dados.sessoesComAcao)}</b> de {n(dados.sessoes)}{" "}
-                      {plural(dados.sessoes, "visita", "visitas")}
-                    </>
-                  }
-                  limite="Não é taxa de venda. Em volume baixo, uma ação a mais move esta taxa dezenas de pontos — leia a tendência ao longo de meses, nunca a semana."
-                />
-                <Cartao
-                  rotulo="Taxa de ação — resto do site"
-                  valor={taxaNaoPaga}
-                  comparacao={
-                    <>
-                      <b>{n(dados.naoPago.sessoesComAcao)}</b> de{" "}
-                      {n(dados.naoPago.sessoes)}{" "}
-                      {plural(dados.naoPago.sessoes, "visita", "visitas")}
-                    </>
-                  }
-                  limite="Busca, redes sociais, acesso direto e links de outros sites, somados. Serve de referência para a taxa ao lado, não de meta."
-                />
-              </div>
-
-              <div className="pnl-aviso pnl-aviso-atencao">
-                <b>Como comparar as duas taxas sem se enganar.</b> Elas se
-                calculam sobre bases de tamanhos muito diferentes. Uma taxa paga
-                alta com dez visitas não é melhor que uma taxa menor com
-                trezentas — é menos conhecida. A comparação só começa a
-                significar alguma coisa depois de algumas centenas de visitas de
-                cada lado.
-              </div>
-            </section>
-
-            <section className="pnl-secao">
-              <h2>Campanha a campanha</h2>
-              {dados.campanhas.length === 0 ? (
-                <p className="pnl-vazio">
-                  Nenhuma campanha identificada no período.
-                </p>
-              ) : (
-                <div className="pnl-cartao">
-                  <div className="pnl-rolagem">
-                    <table className="pnl-tabela">
-                      <thead>
-                        <tr>
-                          <th scope="col">Campanha</th>
-                          <th scope="col" className="num">
-                            Visitas
-                          </th>
-                          <th scope="col" className="num">
-                            Ações
-                          </th>
-                          <th scope="col" className="num">
-                            Investimento
-                          </th>
-                          <th scope="col" className="num">
-                            Custo por ação
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {dados.campanhas.map((campanha) => (
-                          <tr key={campanha.campanha}>
-                            <td>{campanha.campanha}</td>
-                            <td className="num">{n(campanha.sessoes)}</td>
-                            <td className="num">{n(campanha.acoes)}</td>
-                            <td className="num">
-                              {campanha.custo === null
-                                ? "—"
-                                : brl(campanha.custo)}
-                            </td>
-                            <td className="num">
-                              {campanha.custo === null || campanha.acoes === 0
-                                ? "—"
-                                : brl(campanha.custo / campanha.acoes)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="pnl-limite">
-                    Campanha nova leva dias para acumular dado suficiente para
-                    dizer alguma coisa. Pausar uma campanha na primeira semana
-                    de números ruins costuma ser decidir sobre ruído.
-                    {dados.custoIndisponivel
-                      ? " O investimento não está sendo devolvido pela plataforma neste momento; as colunas de valor aparecem vazias em vez de estimadas."
-                      : ""}
-                  </p>
-                </div>
-              )}
-            </section>
-          </>
-        )}
-      </main>
+      <div className="aviso section-gap">
+        <p>
+          <b>O que esta página consegue e o que não consegue dizer.</b> Ela lê o
+          Google Analytics, que enxerga o anúncio pelo caminho que ele traz até o
+          site. Por isso responde bem &ldquo;o anúncio trouxe gente e essa gente
+          pediu contato?&rdquo;.
+        </p>
+        <p>
+          O que ela <b>não</b> faz é listar as campanhas da conta do Google Ads —
+          nem as pausadas, nem as que estão no ar sem nenhum clique. Para isso
+          seria preciso ler a plataforma de anúncios diretamente, que é fonte de
+          dado nova e exige aditivo próprio. A decisão de 06/08 foi não fazer
+          agora: o painel entrega hoje o que o Analytics já autoriza, e a lista
+          completa de campanhas fica registrada como pendência conhecida, e não
+          como esquecimento.
+        </p>
+      </div>
 
       <Rodape geradoEm={dados.geradoEm} />
-    </>
+    </Estrutura>
   );
 }

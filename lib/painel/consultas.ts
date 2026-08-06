@@ -2,6 +2,7 @@ import { protos } from "@google-analytics/data";
 import { unstable_cache } from "next/cache";
 
 import { clienteGa4, propriedade, DIMENSAO, EVENTO } from "@/lib/ga4";
+import { origem as origemDeNegocio } from "@/lib/painel/formato";
 import type { Periodo } from "@/lib/painel/periodo";
 
 // As consultas que alimentam os indicadores de `08-matriz-do-dashboard.md`.
@@ -200,6 +201,7 @@ const ORIGEM_PAGA = umDentre("sessionDefaultChannelGroup", [
 
 export type VisaoGeral = {
   usuariosAtivos: number;
+  usuariosAtivosAnterior: number;
   sessoes: number;
   sessoesAnterior: number;
   cliquesWhatsapp: number;
@@ -209,13 +211,36 @@ export type VisaoGeral = {
   sessoesComWhatsappAnterior: number;
   /** Série diária para o gráfico: data (AAAAMMDD) e sessões. */
   serie: { data: string; sessoes: number; usuarios: number }[];
-  /** Canais de origem, do maior para o menor. */
-  canais: { canal: string; sessoes: number }[];
+  /** A mesma série na janela anterior, para o traço tracejado do gráfico. */
+  serieAnterior: { data: string; sessoes: number }[];
+  /** Origem das visitas em rótulo de negócio, do maior para o menor. */
+  origens: { origem: string; sessoes: number }[];
+  /** Os procedimentos mais clicados. A lista completa está na página 3. */
+  topProcedimentos: { nome: string; cliques: number }[];
+  topAreas: { nome: string; cliques: number }[];
+  /** Total de `procedimento_click`, procedimentos e áreas somados. */
+  cliquesEmCards: number;
+  sessoesComResultados: number;
+  /** Sinais de contexto. Nunca somam com o WhatsApp nem entre si. */
+  instagram: number;
+  endereco: number;
+  grupoVip: number;
   geradoEm: string;
 };
 
 async function carregarVisaoGeral(periodo: Periodo): Promise<VisaoGeral> {
-  const [nativas, whatsapp, serie, canais] = await Promise.all([
+  const [
+    nativas,
+    whatsapp,
+    serie,
+    serieAnterior,
+    origens,
+    procedimentos,
+    areas,
+    cards,
+    resultados,
+    contexto,
+  ] = await Promise.all([
     // Usuários ativos e sessões nas duas janelas, cada linha identificada pelo
     // intervalo a que pertence.
     duasJanelas(periodo, {
@@ -235,17 +260,80 @@ async function carregarVisaoGeral(periodo: Periodo): Promise<VisaoGeral> {
       orderBys: [{ dimension: { dimensionName: "date" } }],
       limit: 400,
     }),
+    // A janela anterior, dia a dia. Pedida separadamente, e não como segundo
+    // `dateRange` da consulta acima: com dois intervalos E a dimensão de data,
+    // a resposta mistura os dois períodos numa lista só e a separação depende
+    // da coluna `dateRange` — que resolve o problema mas dobra o custo de
+    // leitura de cada linha. Duas consultas simples são mais fáceis de ler e
+    // de conferir do que uma difícil.
+    consultar({
+      dateRanges: [{ startDate: periodo.inicioAnterior, endDate: periodo.fimAnterior }],
+      dimensions: [{ name: "date" }],
+      metrics: [{ name: "sessions" }],
+      orderBys: [{ dimension: { dimensionName: "date" } }],
+      limit: 400,
+    }),
+    // Indicador 7, com o cálculo revisado (R1 de 06/08): origem e meio, em vez
+    // da dimensão nativa de canal. É o que separa Instagram de Facebook, que a
+    // classificação padrão junta em "Organic Social".
     consultar({
       dateRanges: janela(periodo),
-      dimensions: [{ name: "sessionDefaultChannelGroup" }],
+      dimensions: [{ name: "sessionSource" }, { name: "sessionMedium" }],
       metrics: [{ name: "sessions" }],
       orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
-      limit: 15,
+      limit: 50,
+    }),
+    // Indicador 8, reapresentado: aqui só os três primeiros aparecem na tela.
+    // A lista completa fica na página 3 — reapresentar não cria indicador.
+    consultar({
+      dateRanges: janela(periodo),
+      dimensions: [{ name: DIMENSAO.nomeItem }],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: e(
+        igual("eventName", EVENTO.procedimento),
+        igual(DIMENSAO.tipoItem, "procedimento"),
+      ),
+      orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
+      limit: 5,
+    }),
+    consultar({
+      dateRanges: janela(periodo),
+      dimensions: [{ name: DIMENSAO.nomeItem }],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: e(
+        igual("eventName", EVENTO.procedimento),
+        igual(DIMENSAO.tipoItem, "area"),
+      ),
+      orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
+      limit: 5,
+    }),
+    consultar({
+      dateRanges: janela(periodo),
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: igual("eventName", EVENTO.procedimento),
+    }),
+    consultar({
+      dateRanges: janela(periodo),
+      metrics: [{ name: "sessions" }],
+      dimensionFilter: igual("eventName", EVENTO.resultados),
+    }),
+    consultar({
+      dateRanges: janela(periodo),
+      dimensions: [{ name: "eventName" }],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: umDentre("eventName", [
+        EVENTO.instagram,
+        EVENTO.endereco,
+        EVENTO.grupoVip,
+      ]),
     }),
   ]);
 
+  const porEvento = new Map(contexto.map((l) => [l.chaves[0], l.valores[0]]));
+
   return {
     usuariosAtivos: primeiro(nativas.atual, 0),
+    usuariosAtivosAnterior: primeiro(nativas.anterior, 0),
     sessoes: primeiro(nativas.atual, 1),
     sessoesAnterior: primeiro(nativas.anterior, 1),
     cliquesWhatsapp: primeiro(whatsapp.atual, 0),
@@ -257,9 +345,44 @@ async function carregarVisaoGeral(periodo: Periodo): Promise<VisaoGeral> {
       sessoes: l.valores[0],
       usuarios: l.valores[1],
     })),
-    canais: canais.map((l) => ({ canal: l.chaves[0], sessoes: l.valores[0] })),
+    serieAnterior: serieAnterior.map((l) => ({
+      data: l.chaves[0],
+      sessoes: l.valores[0],
+    })),
+    origens: agruparOrigens(origens),
+    topProcedimentos: procedimentos.map((l) => ({
+      nome: l.chaves[0],
+      cliques: l.valores[0],
+    })),
+    topAreas: areas.map((l) => ({ nome: l.chaves[0], cliques: l.valores[0] })),
+    cliquesEmCards: primeiro(cards),
+    sessoesComResultados: primeiro(resultados),
+    instagram: porEvento.get(EVENTO.instagram) ?? 0,
+    endereco: porEvento.get(EVENTO.endereco) ?? 0,
+    grupoVip: porEvento.get(EVENTO.grupoVip) ?? 0,
     geradoEm: new Date().toISOString(),
   };
+}
+
+/**
+ * Junta as linhas de origem e meio nos rótulos de negócio.
+ *
+ * A API devolve uma linha por par origem/meio, e vários pares caem no mesmo
+ * rótulo: `instagram.com / referral` e `l.instagram.com / referral` são os dois
+ * Instagram. Somar aqui, no servidor, é o que faz a rosca ter cinco fatias
+ * legíveis em vez de vinte.
+ */
+function agruparOrigens(linhas: Linha[]): { origem: string; sessoes: number }[] {
+  const soma = new Map<string, number>();
+
+  for (const linha of linhas) {
+    const rotulo = origemDeNegocio(linha.chaves[0], linha.chaves[1]);
+    soma.set(rotulo, (soma.get(rotulo) ?? 0) + linha.valores[0]);
+  }
+
+  return [...soma.entries()]
+    .map(([origem, sessoes]) => ({ origem, sessoes }))
+    .sort((a, b) => b.sessoes - a.sessoes);
 }
 
 // ---------------------------------------------------------------------------
@@ -279,11 +402,29 @@ export type AcoesComerciais = {
   instagramPorPosicao: { posicao: string; cliques: number }[];
   endereco: number;
   grupoVip: number;
+  /** Etapas do funil. Todas reapresentam indicadores que já existem. */
+  sessoes: number;
+  cliquesEmCards: number;
+  sessoesComResultados: number;
+  sessoesComWhatsapp: number;
+  /** Onde a conversa começa, por origem da visita. */
+  acoesPorOrigem: { origem: string; cliques: number }[];
   geradoEm: string;
 };
 
 async function carregarAcoesComerciais(periodo: Periodo): Promise<AcoesComerciais> {
-  const [agendar, cta, porPosicao, contexto, instagramPosicao] = await Promise.all([
+  const [
+    agendar,
+    cta,
+    porPosicao,
+    contexto,
+    instagramPosicao,
+    sessoes,
+    cards,
+    resultados,
+    sessoesWhats,
+    porOrigem,
+  ] = await Promise.all([
     // Indicador 1: só os cliques marcados como chamada à ação.
     consultar({
       dateRanges: janela(periodo),
@@ -335,6 +476,33 @@ async function carregarAcoesComerciais(periodo: Periodo): Promise<AcoesComerciai
       orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
       limit: 20,
     }),
+    // As quatro consultas abaixo alimentam o funil. Nenhuma delas calcula nada
+    // novo: são os indicadores 11, 8, 9 e 2 pedidos de novo, para poderem ser
+    // exibidos lado a lado.
+    consultar({ dateRanges: janela(periodo), metrics: [{ name: "sessions" }] }),
+    consultar({
+      dateRanges: janela(periodo),
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: igual("eventName", EVENTO.procedimento),
+    }),
+    consultar({
+      dateRanges: janela(periodo),
+      metrics: [{ name: "sessions" }],
+      dimensionFilter: igual("eventName", EVENTO.resultados),
+    }),
+    consultar({
+      dateRanges: janela(periodo),
+      metrics: [{ name: "sessions" }],
+      dimensionFilter: igual("eventName", EVENTO.whatsapp),
+    }),
+    consultar({
+      dateRanges: janela(periodo),
+      dimensions: [{ name: "sessionSource" }, { name: "sessionMedium" }],
+      metrics: [{ name: "eventCount" }],
+      dimensionFilter: igual("eventName", EVENTO.whatsapp),
+      orderBys: [{ metric: { metricName: "eventCount" }, desc: true }],
+      limit: 50,
+    }),
   ]);
 
   const porEvento = new Map(contexto.map((l) => [l.chaves[0], l.valores[0]]));
@@ -357,6 +525,14 @@ async function carregarAcoesComerciais(periodo: Periodo): Promise<AcoesComerciai
     })),
     endereco: porEvento.get(EVENTO.endereco) ?? 0,
     grupoVip: porEvento.get(EVENTO.grupoVip) ?? 0,
+    sessoes: primeiro(sessoes),
+    cliquesEmCards: primeiro(cards),
+    sessoesComResultados: primeiro(resultados),
+    sessoesComWhatsapp: primeiro(sessoesWhats),
+    acoesPorOrigem: agruparOrigens(porOrigem).map((o) => ({
+      origem: o.origem,
+      cliques: o.sessoes,
+    })),
     geradoEm: new Date().toISOString(),
   };
 }
@@ -375,12 +551,25 @@ export type InteresseEPublico = {
   regioes: { cidade: string; estado: string; usuarios: number }[];
   /** Uma célula por combinação de dia da semana (0 = domingo) e hora. */
   horarios: { diaSemana: number; hora: number; sessoes: number }[];
+  /** Indicador 7, lista completa. A rosca da visão geral mostra as maiores. */
+  origens: { origem: string; sessoes: number }[];
+  /** Celular, computador e tablet. */
+  dispositivos: { nome: string; sessoes: number }[];
   geradoEm: string;
 };
 
 async function carregarInteresse(periodo: Periodo): Promise<InteresseEPublico> {
-  const [procedimentos, areas, total, sessoes, resultados, regioes, horarios] =
-    await Promise.all([
+  const [
+    procedimentos,
+    areas,
+    total,
+    sessoes,
+    resultados,
+    regioes,
+    horarios,
+    origens,
+    dispositivos,
+  ] = await Promise.all([
       // Indicador 8, metade dos procedimentos. O recorte por tipo não é
       // opcional: "Estética Regenerativa" é área E procedimento, e sem o tipo
       // as duas viram uma linha só — número errado, não número vazio.
@@ -431,6 +620,20 @@ async function carregarInteresse(periodo: Periodo): Promise<InteresseEPublico> {
         metrics: [{ name: "sessions" }],
         limit: 200,
       }),
+      consultar({
+        dateRanges: janela(periodo),
+        dimensions: [{ name: "sessionSource" }, { name: "sessionMedium" }],
+        metrics: [{ name: "sessions" }],
+        orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+        limit: 50,
+      }),
+      consultar({
+        dateRanges: janela(periodo),
+        dimensions: [{ name: "deviceCategory" }],
+        metrics: [{ name: "sessions" }],
+        orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+        limit: 5,
+      }),
     ]);
 
   return {
@@ -452,9 +655,22 @@ async function carregarInteresse(periodo: Periodo): Promise<InteresseEPublico> {
       hora: Number(l.chaves[1]),
       sessoes: l.valores[0],
     })),
+    origens: agruparOrigens(origens),
+    dispositivos: dispositivos.map((l) => ({
+      nome: DISPOSITIVOS[l.chaves[0]] ?? l.chaves[0],
+      sessoes: l.valores[0],
+    })),
     geradoEm: new Date().toISOString(),
   };
 }
+
+/** Os três valores que a plataforma devolve em `deviceCategory`, em português. */
+const DISPOSITIVOS: Record<string, string> = {
+  mobile: "Celular",
+  desktop: "Computador",
+  tablet: "Tablet",
+  smart_tv: "TV",
+};
 
 // ---------------------------------------------------------------------------
 // Página 4 — Google Ads (indicadores 6, 15, 16, 17, 18 e 19)

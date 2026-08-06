@@ -135,6 +135,106 @@ export function canal(valor: string): string {
 }
 
 /**
+ * Origem da visita em rótulo de negócio, a partir de `sessionSource` e
+ * `sessionMedium`.
+ *
+ * **Por que não basta a dimensão nativa de canal.** A classificação padrão da
+ * plataforma joga Instagram, Facebook, TikTok e qualquer outra rede numa única
+ * linha chamada `Organic Social`. Para um consultório que publica no Instagram
+ * e não no Facebook, "Redes sociais: 47" não responde nada — a pergunta é se o
+ * Instagram está trazendo gente, e a resposta estava escondida dentro do
+ * agrupamento.
+ *
+ * Este mapeamento é a **revisão R1 do indicador 7** de
+ * `08-matriz-do-dashboard.md`, de 2026-08-06: o cálculo declarado deixa de ser
+ * "dimensão nativa de canal padrão" e passa a ser origem e meio agrupados por
+ * rótulo de negócio. Não é indicador novo — é o mesmo indicador com o cálculo
+ * revisado, e a revisão está registrada na matriz.
+ *
+ * **A ordem das regras importa.** `google` com meio pago é Google Ads; `google`
+ * com meio orgânico é busca. Testar a origem antes do meio inverteria os dois.
+ *
+ * O que não bate com nenhuma regra volta como `origem / meio`, em vez de virar
+ * "Outros": um rótulo genérico esconderia justamente a origem nova que ninguém
+ * esperava, que é a única que valeria a pena descobrir.
+ */
+const MEIOS_PAGOS = ["cpc", "ppc", "paid", "cpm", "cpv", "cpa", "retargeting"];
+
+export function origem(fonte: string, meio: string): string {
+  const f = (fonte || "").toLowerCase();
+  const m = (meio || "").toLowerCase();
+  const pago = MEIOS_PAGOS.some((p) => m.includes(p));
+
+  // Acesso direto: a plataforma não escreve isso de uma forma só.
+  if (f === "(direct)" || f === "direct" || (!f && !m)) return "Acesso direto";
+
+  // As redes primeiro, e por conteúdo do texto: o Instagram chega como
+  // `instagram`, `instagram.com`, `l.instagram.com` e `ig`, conforme o
+  // aplicativo que abriu o link.
+  if (f.includes("instagram") || f === "ig") {
+    return pago ? "Anúncio no Instagram" : "Instagram";
+  }
+  if (f.includes("facebook") || f === "fb" || f.includes("fb.me")) {
+    return pago ? "Anúncio no Facebook" : "Facebook";
+  }
+  // `l.wl.co` é o redirecionador de links do WhatsApp — quem chega por ali
+  // clicou num link enviado numa conversa.
+  if (f.includes("whatsapp") || f.includes("wa.me") || f.includes("l.wl.co")) {
+    return "WhatsApp";
+  }
+  if (f.includes("youtube")) return "YouTube";
+  if (f.includes("tiktok")) return "TikTok";
+  if (f.includes("linkedin")) return "LinkedIn";
+
+  if (f.includes("google")) {
+    if (pago) return "Google Ads";
+    if (m === "organic" || !m || m === "(none)") return "Busca no Google";
+    if (m === "referral") return "Google — outros serviços";
+  }
+  if (f.includes("bing") || f.includes("duckduckgo") || f.includes("yahoo")) {
+    return "Busca em outro buscador";
+  }
+
+  if (pago) return "Anúncio pago";
+  if (m === "email" || m === "e-mail") return "E-mail";
+  if (m === "referral") return "Link em outro site";
+  if (f === "(not set)" || m === "(not set)") return "Origem não identificada";
+
+  return `${fonte} / ${meio}`;
+}
+
+/**
+ * O que cada rótulo de origem quer dizer, para quem nunca viu o termo.
+ *
+ * Pedido do cliente em 06/08 — "acesso direto" foi o exemplo que ele deu pelo
+ * nome. Um rótulo que o leitor interpreta errado é pior do que rótulo nenhum:
+ * "acesso direto" soa como "digitou o endereço", e quase nunca é isso.
+ */
+const EXPLICACAO_ORIGEM: Record<string, string> = {
+  "Acesso direto":
+    "O navegador não informou de onde a pessoa veio. Quase sempre é link salvo, endereço digitado, link colado numa conversa ou clique dentro de um aplicativo. Não quer dizer que a pessoa já conhecia o site.",
+  Instagram: "Veio de um link no Instagram — perfil, story ou publicação.",
+  Facebook: "Veio de um link no Facebook.",
+  WhatsApp:
+    "Alguém mandou o link do site numa conversa de WhatsApp e a pessoa clicou. É indicação boca a boca acontecendo.",
+  "Busca no Google":
+    "A pessoa pesquisou no Google e clicou no resultado sem anúncio. É a busca que o site conquista sozinho.",
+  "Google Ads": "Veio de um anúncio pago no Google.",
+  "Link em outro site":
+    "Outro site tem um link para o do consultório e alguém clicou nele.",
+  "Origem não identificada":
+    "A plataforma não conseguiu classificar de onde veio. Não é erro de medição nem visita perdida — é ausência de classificação.",
+  "Anúncio no Instagram": "Veio de um anúncio pago exibido no Instagram.",
+  "Anúncio no Facebook": "Veio de um anúncio pago exibido no Facebook.",
+  "Busca em outro buscador":
+    "A pessoa pesquisou em um buscador que não é o Google — Bing, DuckDuckGo ou Yahoo.",
+};
+
+export function explicarOrigem(rotulo: string): string | undefined {
+  return EXPLICACAO_ORIGEM[rotulo];
+}
+
+/**
  * Nomes de região como a plataforma os devolve: em inglês, e com o prefixo
  * "State of" nos estados brasileiros. `State of Santa Catarina` vira
  * `Santa Catarina`.

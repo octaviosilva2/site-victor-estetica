@@ -12,14 +12,14 @@
 
 export default function ErroDoPainel({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="pnl-entrada">
-      <div className="pnl-entrada-caixa">
+    <div className="entrada">
+      <div className="entrada-caixa">
         <h1>Não foi possível carregar os números</h1>
         <p>
           A leitura dos dados falhou agora. Isso costuma ser temporário —
           tente de novo em alguns minutos. Se continuar, avise o Octavio.
         </p>
-        <button type="button" className="pnl-botao" onClick={reset}>
+        <button type="button" className="botao" onClick={reset}>
           Tentar de novo
         </button>
       </div>

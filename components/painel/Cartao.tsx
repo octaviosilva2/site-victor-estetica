@@ -1,15 +1,17 @@
-// Cartão de indicador. É a unidade de leitura do painel inteiro.
+// Cartão grande. É o bloco de leitura das seções que precisam de mais do que um
+// número — gráfico, lista, tabela — com título, nota e as duas linhas de texto
+// que a matriz exige.
 //
 // Três propriedades carregam regra de contrato, e não gosto:
 //
 // `limite` — `08-matriz-do-dashboard.md`, regra 2: todo indicador que possa ser
-// mal interpretado carrega uma linha dizendo o que ele NÃO significa. Por isso
-// é obrigatória: esquecer de escrever a limitação passa a ser erro de
-// compilação, e não um detalhe que alguém repara meses depois.
+// mal interpretado carrega uma linha dizendo o que ele NÃO significa. É
+// obrigatória de propósito: esquecer de escrever a limitação passa a ser erro
+// de compilação, e não um detalhe que alguém repara meses depois.
 //
 // `tom` — regra 1: ação importante e sinal de contexto nunca se somam. O tom
-// pinta a faixa do topo e o ponto do rótulo, que é como a regra continua
-// visível na tela depois que ninguém lembrar mais dela.
+// pinta a faixa do topo do cartão, que é como a regra continua visível na tela
+// depois que ninguém lembrar mais dela.
 //
 // `leitura` — o que fazer com o número. É a diferença entre um painel que
 // informa e um que orienta: "11 cliques" não diz nada sozinho. Fica ACIMA do
@@ -18,62 +20,52 @@
 
 export type Tom = "acao" | "contexto" | "neutro";
 
-const CLASSE_CARTAO: Record<Tom, string> = {
-  acao: " pnl-cartao-acao",
-  contexto: " pnl-cartao-contexto",
-  neutro: "",
-};
-
-const CLASSE_PONTO: Record<Tom, string> = {
-  acao: " pnl-ponto-acao",
-  contexto: " pnl-ponto-contexto",
-  neutro: "",
-};
-
 export default function Cartao({
-  rotulo,
-  valor,
-  comparacao,
+  titulo,
+  nota,
+  etiqueta,
   leitura,
   limite,
   tom = "neutro",
-  destaque = false,
+  largura,
   children,
 }: {
-  rotulo: string;
-  valor: string;
-  /** Linha de comparação com o período anterior. Omitida quando não há base. */
-  comparacao?: React.ReactNode;
+  titulo: string;
+  /** Subtítulo curto, embaixo do título. */
+  nota?: string;
+  /** Pastilha no canto direito do cabeçalho. */
+  etiqueta?: React.ReactNode;
   /** O que fazer com este número. Omitida quando não há o que dizer. */
   leitura?: React.ReactNode;
   /** O que este número não significa. Obrigatório. */
   limite: string;
   tom?: Tom;
-  /** Número maior, para o indicador que a página existe para responder. */
-  destaque?: boolean;
-  children?: React.ReactNode;
+  /** Quantas colunas o cartão ocupa na grade. */
+  largura?: 2 | 3;
+  children: React.ReactNode;
 }) {
+  const classes = [
+    "card",
+    tom === "neutro" ? "" : `card-${tom}`,
+    largura ? `span-${largura}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={`pnl-cartao${CLASSE_CARTAO[tom]}`}>
-      <p className="pnl-cartao-rotulo">
-        {tom === "neutro" ? null : (
-          <span className={`pnl-ponto${CLASSE_PONTO[tom]}`} aria-hidden="true" />
-        )}
-        {rotulo}
-      </p>
+    <article className={classes}>
+      <div className="card-head">
+        <div>
+          <h2 className="card-title">{titulo}</h2>
+          {nota ? <p className="card-note">{nota}</p> : null}
+        </div>
+        {etiqueta}
+      </div>
 
-      <p
-        className={`pnl-numero${tom === "acao" ? " pnl-numero-acao" : ""}${
-          destaque ? " pnl-numero-grande" : ""
-        }`}
-      >
-        {valor}
-      </p>
-
-      {comparacao ? <p className="pnl-comparacao">{comparacao}</p> : null}
       {children}
-      {leitura ? <p className="pnl-leitura">{leitura}</p> : null}
-      <p className="pnl-limite">{limite}</p>
-    </div>
+
+      {leitura ? <p className="leitura">{leitura}</p> : null}
+      <p className="limite">{limite}</p>
+    </article>
   );
 }

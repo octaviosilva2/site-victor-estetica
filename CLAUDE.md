@@ -373,24 +373,40 @@ perto. Por isso:
 `(site)` e `(painel)` são route groups: não aparecem em URL nenhuma, e nenhum
 endereço do site mudou por causa deles.
 
-### O painel é produto da Escale IA, não uma página a mais do consultório
+### O painel é produto da Escale IA no código, e do cliente na tela
 
 Decisão **D7** de `05-escopo-contratado.md`, de 2026-08-06: o código do painel é
 ativo da agência e se reaproveita nos próximos clientes; o que é do Victor é a
 instância — o endereço, o acesso e **o dado**, que nunca sai da propriedade
-dele. Três consequências para quem mexer aqui:
+dele.
+
+> **Emenda do mesmo dia, e ela é o que mais confunde quem chega agora.** A D7
+> continua valendo inteira, mas ela fala de **código** reutilizável, não de
+> marca visível. O Octavio foi explícito em 06/08: *"não precisa ser o layout da
+> Escale IA, não precisa falar que é da Escale IA"*. Saíram da tela a assinatura
+> do rodapé, o nome no cabeçalho e o título da tela de entrada. **Quem aparece é
+> o cliente.** Se você for acrescentar marca de agência em qualquer lugar da
+> interface, está desfazendo uma decisão registrada.
 
 | | Onde | Regra |
 |---|---|---|
-| **Identidade** | `app/painel.css` | A paleta é a da **Escale IA**, dos tokens canônicos em `empresas-arquivos/ESCALE-IA/4-Marca/tokens/` (v1.2.0), onde cada par texto/fundo já foi medido em WCAG. **Não invente cor**: se faltar uma, ela existe lá. O painel deixou de herdar a paleta do site do cliente em 06/08 |
-| **O que é do cliente** | `lib/painel/instancia.ts` | Nome, subtítulo, como se chama a ação importante e quais são os sinais de contexto. **Nada além disso.** Se você precisou editar um componente para atender a um cliente, o componente está errado ou falta uma chave nesse arquivo |
-| **Cor não é tema de cliente** | — | Índigo e ciano carregam significado (abaixo). Trocá-los por cor de cliente destrói a regra que eles tornam visível |
+| **Identidade visual** | `app/painel.css` | A paleta e a estrutura vêm da **demonstração comercial aprovada**, em `implantação-dados-site/MATERIAL/demonstracao/index.html` — arquivo único, 636 linhas, sem dependência externa. Não é inspiração: é o mesmo desenho, com os mesmos valores. Se algo no CSS divergir daquele arquivo, o errado é o CSS. **Não invente cor**: se faltar uma, ela está lá |
+| **O que é do cliente** | `lib/painel/instancia.ts` | Nome, subtítulo, como se chama a ação importante e quais são os sinais de contexto. **Nada além disso.** Se você precisou editar um componente para atender a um cliente, o componente está errado ou falta uma chave nesse arquivo. É a única fonte de nome próprio no painel inteiro |
+| **Cor não é tema de cliente** | — | Azul e violeta carregam significado (abaixo). Trocá-los por cor de cliente destrói a regra que eles tornam visível |
+| **Tipografia** | `app/(painel)/layout.tsx` | Geist e Geist Mono, de `public/fonts/`, carregadas com `next/font/local` **só no layout do painel**. Nunca no layout raiz — o site tem tipografia própria e não deve baixar mais duas famílias por causa do painel |
 
-**O ciano nunca pinta algarismo.** Ele mede 2.07:1 sobre branco e os próprios
-tokens da marca proíbem usá-lo como texto ou borda de controle em fundo claro.
-A família de contexto se marca por **área** — faixa do cartão, preenchimento de
-barra, ponto do rótulo — e o número fica em tinta. Está escrito no cabeçalho de
-`app/painel.css`, e o motivo é contraste, não gosto.
+**As duas famílias de cor, desde 06/08:** `--accent` **#246bfd** (azul) para a
+ação importante, `--purple` **#7158d9** (violeta) para o sinal de contexto. As
+duas medem contraste suficiente para pintar algarismo nos dois temas, o que a
+paleta anterior não permitia: o ciano #00C2FF media 2.07:1 sobre branco e só
+podia marcar área. Agora a distinção é **por matiz**, e não por tratamento — o
+que é mais simples de manter e mais legível de ler.
+
+**Tema claro e escuro.** O painel tem os dois, por `data-theme` na raiz, com a
+escolha em `localStorage` e um script no layout que aplica antes da primeira
+pintura. O `try/catch` desse script não é decoração: em navegação privada de
+alguns navegadores, ler `localStorage` **lança**, e sem o `catch` uma
+preferência de cor derrubaria a página inteira.
 
 ### Os seis pontos que quebram o painel sem erro nenhum
 
@@ -403,6 +419,7 @@ barra, ponto do rótulo — e o número fica em tinta. Está escrito no cabeçal
 | O `overrides` de `google-auth-library` | `package.json` | Sem ele há duas cópias da biblioteca, com tipos diferentes para a mesma classe, e o build quebra |
 | `exigirAcesso()` como primeira linha da página | `lib/painel/sessao.ts` | É a trava real de acesso. Página nova do painel sem essa chamada expõe dado do cliente |
 | Ler a coluna `dateRange`, e **não** a ordem das linhas | `duasJanelas()` em `lib/painel/consultas.ts` | Com dois intervalos, a API devolve uma linha por intervalo **em ordem não garantida**. Tratar a linha 0 como período atual mostra o período anterior com o rótulo do atual, sem erro nenhum. Achado E0.12, 06/08 |
+| Todo seletor de `painel.css` escopado sob `.pnl-raiz` | `app/painel.css` | `app/site.css` é importado no **layout raiz** e carrega nas rotas do painel também. Ele declara `html`, `body`, `h1,h2,h3`, `nav`, `section` e `footer` — seletores de elemento que alcançam esta interface. Sem o escopo, o título do painel sai na fonte do consultório e a navegação da barra lateral herda `position:sticky` do menu do site. **Nenhum erro, nenhum aviso** — só a tela errada. Medido em 06/08, e o bloco de neutralização no topo do arquivo existe por causa disso |
 | `dateRange` **se lê, não se pede** | o mesmo lugar | Listá-la em `dimensions` devolve `INVALID_ARGUMENT: Field dateRange is not a dimension` e derruba a página. Ela entra sozinha no cabeçalho da resposta. Foi a correção errada do problema da linha acima, e tirou a visão geral do ar por dois commits |
 
 ### Regras do painel que vêm de contrato, não de gosto
@@ -411,9 +428,12 @@ Estão em `08-matriz-do-dashboard.md` e `06-plano-de-medicao.md`. Mudar qualquer
 uma é mudança de escopo:
 
 1. **Ação importante e sinal de contexto nunca se somam.** WhatsApp é a ação.
-   Instagram, endereço e Grupo VIP são contexto. A cor codifica isso: índigo
-   `#4F46E5` para ação, ciano `#00C2FF` para contexto — as duas famílias da
-   marca da Escale IA, e não uma escolha estética.
+   Instagram, endereço e Grupo VIP são contexto. A cor codifica isso: azul
+   `#246bfd` para ação, violeta `#7158d9` para contexto — e não uma escolha
+   estética. Não existe "total de interações" combinando as duas famílias, em
+   tela nenhuma. A demonstração comercial soma WhatsApp, formulário, telefone e
+   download num total único de "ações"; **aqui isso é proibido**, e foi
+   registrado como o item da demo que não se copia.
 2. **Todo cartão que pode ser mal lido carrega uma linha dizendo o que ele NÃO
    significa.** Por isso a propriedade `limite` de `Cartao` é obrigatória —
    esquecer virou erro de compilação.
@@ -522,11 +542,18 @@ vira aditivo formal, nunca execução direta.
 
 **Última atualização:** 2026-08-06 · Instrumentação em produção desde
 2026-08-05, container GTM versão 2. **Painel publicado em 2026-08-06** em
-`dados.victorfolster.com.br`, e **redesenhado no mesmo dia** com a identidade
-da Escale IA, período em linguagem de negócio e a página de Google Ads do
-aditivo A2 — 17 indicadores em 4 páginas. 31 testes aprovados, 1 parcial (T33),
-1 reprovado (T28). Falta entrar no painel e conferir os indicadores (T31),
-o vocabulário (T38) e o desempenho (T36).
+`dados.victorfolster.com.br` e **refeito no fim do mesmo dia** com o layout da
+demonstração comercial aprovada: barra lateral escura, barra superior fixa,
+tema claro e escuro, gráfico com comparação do período anterior, listas
+completas nas páginas internas e origem desdobrada por rede (revisão R1 do
+indicador 7). **Nenhuma marca de agência na tela** — o cabeçalho leva o nome do
+cliente. Continuam 17 indicadores em 4 páginas; o que mudou foi a apresentação
+e a granularidade do indicador 7. **Aditivo A3 arquivado**: a página de Google
+Ads continua lendo só o Analytics, e a limitação — campanha sem veiculação não
+aparece — passou a estar escrita na própria tela. 32 testes aprovados, 1 parcial
+(T33), 1 reprovado (T28). Depois do redesenho, **T31, T36 e T38 voltam a
+pendentes**: os textos e a tela mudaram, e teste não se aprova por leitura de
+código.
 
 > **Como conferir, em 10 segundos, que a separação continua de pé.** Abra o
 > console em `www.victorfolster.com.br` e digite `typeof window.dataLayer` —

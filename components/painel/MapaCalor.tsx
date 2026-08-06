@@ -6,6 +6,9 @@ import { DIAS_SEMANA, n } from "@/lib/painel/formato";
 // em volume baixo, uma célula isolada não diz nada. O desenho existe para
 // mostrar FAIXAS — manhã, fim de tarde, fim de semana — e é assim que o rótulo
 // abaixo dele pede para ser lido.
+//
+// O tom é sempre o azul da ação; o que varia é quanto do fundo aparece. Uma
+// escala de matizes diferentes sugeriria categorias, e aqui há só intensidade.
 
 export default function MapaCalor({
   horarios,
@@ -14,14 +17,14 @@ export default function MapaCalor({
 }) {
   if (horarios.length === 0) {
     return (
-      <p className="pnl-vazio">
+      <p className="vazio">
         Ainda não há acessos suficientes no período para formar um padrão de
         horário.
       </p>
     );
   }
 
-  // Matriz 7 x 24 preenchida com zero, para que as horas sem acesso apareçam
+  // Matriz 7 × 24 preenchida com zero, para que as horas sem acesso apareçam
   // como célula vazia em vez de sumirem da grade.
   const grade: number[][] = Array.from({ length: 7 }, () => Array(24).fill(0));
   for (const item of horarios) {
@@ -33,11 +36,8 @@ export default function MapaCalor({
   const maior = Math.max(...horarios.map((h) => h.sessoes), 1);
 
   return (
-    <div className="pnl-rolagem">
-      <table className="pnl-calor">
-        <caption className="pnl-vazio" style={{ captionSide: "bottom", textAlign: "left" }}>
-          Cada quadrado é uma hora. Quanto mais escuro, mais sessões.
-        </caption>
+    <div className="table-wrap">
+      <table className="calor">
         <thead>
           <tr>
             <th scope="col" />
@@ -55,16 +55,16 @@ export default function MapaCalor({
               {linha.map((sessoes, hora) => (
                 <td key={hora}>
                   <span
-                    className="pnl-calor-celula"
+                    className="calor-celula"
                     style={{
-                      // Transparência proporcional. O tom é sempre o índigo da
-                      // Escale IA; o que varia é quanto do fundo aparece.
                       background:
                         sessoes === 0
-                          ? "var(--pnl-superficie-fundo)"
-                          : `rgb(79 70 229 / ${(0.15 + (sessoes / maior) * 0.85).toFixed(2)})`,
+                          ? "var(--surface-3)"
+                          : `rgb(36 107 253 / ${(0.18 + (sessoes / maior) * 0.82).toFixed(2)})`,
                     }}
-                    title={`${DIAS_SEMANA[dia]}, ${hora}h — ${n(sessoes)} ${sessoes === 1 ? "sessão" : "sessões"}`}
+                    data-tip={`${DIAS_SEMANA[dia]}, ${hora}h — ${n(sessoes)} ${
+                      sessoes === 1 ? "visita" : "visitas"
+                    }`}
                   />
                 </td>
               ))}
