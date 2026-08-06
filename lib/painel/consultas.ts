@@ -28,6 +28,33 @@ export type Linha = {
 };
 
 /**
+ * O que a API respondeu além das linhas.
+ *
+ * `limiar` é o motivo de este tipo existir. A plataforma **omite linhas
+ * inteiras** quando o recorte tem gente demais identificável e gente de menos
+ * para proteger — e a omissão não vem como erro nem como linha vazia: vem como
+ * uma lista mais curta do que a realidade. Quem soma as barras encontra menos
+ * do que o total, e a conclusão natural é que o painel está errado.
+ *
+ * O sinal chega em `metadata.subjectToThresholding`. Sem lê-lo, a diferença
+ * fica sem explicação na tela.
+ */
+type Resposta = {
+  linhas: Linha[];
+  /** Nomes das colunas de dimensão, na ordem devolvida pela API. */
+  colunas: string[];
+  /** A plataforma ocultou linhas desta consulta por limiar de privacidade. */
+  limiar: boolean;
+};
+
+/**
+ * Nome da dimensão que a API acrescenta quando a consulta pede mais de um
+ * intervalo de datas. Os valores são `date_range_0`, `date_range_1`, e assim
+ * por diante, na ordem em que os intervalos foram declarados.
+ */
+const DIMENSAO_INTERVALO = "dateRange";
+
+/**
  * Janela de cache do painel: 12 horas, em segundos.
  *
  * Declarado em `08-matriz-do-dashboard.md` como "até 12h" em todos os
@@ -38,16 +65,82 @@ export type Linha = {
  */
 export const CACHE_SEGUNDOS = 12 * 60 * 60;
 
-async function consultar(req: Omit<Requisicao, "property">): Promise<Linha[]> {
+async function bruta(req: Omit<Requisicao, "property">): Promise<Resposta> {
   const [resposta] = await clienteGa4().runReport({
     ...req,
     property: propriedade(),
   });
 
-  return (resposta.rows ?? []).map((linha) => ({
-    chaves: (linha.dimensionValues ?? []).map((d) => d.value ?? ""),
-    valores: (linha.metricValues ?? []).map((m) => Number(m.value ?? 0)),
-  }));
+  return {
+    linhas: (resposta.rows ?? []).map((linha) => ({
+      chaves: (linha.dimensionValues ?? []).map((d) => d.value ?? ""),
+      valores: (linha.metricValues ?? []).map((m) => Number(m.value ?? 0)),
+    })),
+    colunas: (resposta.dimensionHeaders ?? []).map((c) => c.name ?? ""),
+    limiar: Boolean(resposta.metadata?.subjectToThresholding),
+  };
+}
+
+async function consultar(req: Omit<Requisicao, "property">): Promise<Linha[]> {
+  return (await bruta(req)).linhas;
+}
+
+/**
+ * Consulta as duas janelas de uma vez e separa as linhas por intervalo.
+ *
+ * **Por que isto não é `linhas[0]` e `linhas[1]`.** Com mais de um intervalo, a
+ * API acrescenta sozinha a dimensão `dateRange` e devolve uma linha por
+ * intervalo. A ordem dessas linhas **não é garantida**: sem `orderBys`
+ * explícito a plataforma ordena como quiser, e nada impede que o intervalo
+ * anterior venha primeiro. Quem lê a linha 0 como "período atual" está
+ * apostando numa ordem que a API nunca prometeu.
+ *
+ * O desfecho de perder essa aposta é o pior possível: o painel mostra os
+ * números do período anterior no lugar do atual, com o rótulo do atual, sem
+ * erro nenhum em lugar nenhum. O cliente lê "28 dias" e vê os 28 dias
+ * anteriores.
+ *
+ * Aqui a dimensão é pedida e lida pelo nome, no cabeçalho da resposta. A ordem
+ * das linhas deixa de importar.
+ */
+async function duasJanelas(
+  periodo: Periodo,
+  req: Omit<Requisicao, "property" | "dateRanges">,
+): Promise<{ atual: Linha[]; anterior: Linha[]; limiar: boolean }> {
+  const resposta = await bruta({
+    ...req,
+    dateRanges: [
+      { startDate: periodo.inicio, endDate: periodo.fim },
+      { startDate: periodo.inicioAnterior, endDate: periodo.fimAnterior },
+    ],
+    dimensions: [{ name: DIMENSAO_INTERVALO }, ...(req.dimensions ?? [])],
+  });
+
+  // A posição da coluna vem do cabeçalho, não de uma suposição sobre onde a
+  // API a colocou. Se um dia ela mudar de lugar, isto continua certo.
+  const coluna = resposta.colunas.indexOf(DIMENSAO_INTERVALO);
+
+  // Sem a coluna não há como saber qual linha é qual período. Falhar alto é
+  // deliberado: o alternativo seria devolver duas listas vazias, e um painel
+  // zerado é indistinguível de um mês sem visita nenhuma.
+  if (coluna < 0) {
+    throw new Error(
+      `A resposta da Data API não trouxe a dimensão ${DIMENSAO_INTERVALO}. ` +
+        `Colunas recebidas: ${resposta.colunas.join(", ") || "nenhuma"}.`,
+    );
+  }
+
+  const separar = (indice: number) =>
+    resposta.linhas
+      .filter((l) => l.chaves[coluna] === `date_range_${indice}`)
+      // Fora a chave do intervalo: quem chama pediu as próprias dimensões e
+      // espera encontrá-las na ordem em que as pediu.
+      .map((l) => ({
+        chaves: l.chaves.filter((_, i) => i !== coluna),
+        valores: l.valores,
+      }));
+
+  return { atual: separar(0), anterior: separar(1), limiar: resposta.limiar };
 }
 
 /** Filtro de igualdade exata numa dimensão. */
@@ -95,35 +188,30 @@ export type VisaoGeral = {
 };
 
 async function carregarVisaoGeral(periodo: Periodo): Promise<VisaoGeral> {
-  const janelas = [
-    { startDate: periodo.inicio, endDate: periodo.fim },
-    { startDate: periodo.inicioAnterior, endDate: periodo.fimAnterior },
-  ];
+  const janela = [{ startDate: periodo.inicio, endDate: periodo.fim }];
 
   const [nativas, whatsapp, serie, canais] = await Promise.all([
-    // Usuários ativos e sessões nas duas janelas. Com dois intervalos, a API
-    // devolve uma linha por intervalo, na ordem em que foram pedidos.
-    consultar({
-      dateRanges: janelas,
+    // Usuários ativos e sessões nas duas janelas, cada linha identificada pelo
+    // intervalo a que pertence.
+    duasJanelas(periodo, {
       metrics: [{ name: "activeUsers" }, { name: "sessions" }],
     }),
     // O indicador principal do contrato, e a base da taxa de ações
     // importantes: `sessions` sob filtro de evento devolve as sessões em que
     // aquele evento aconteceu, não o total de sessões.
-    consultar({
-      dateRanges: janelas,
+    duasJanelas(periodo, {
       metrics: [{ name: "eventCount" }, { name: "sessions" }],
       dimensionFilter: igual("eventName", EVENTO.whatsapp),
     }),
     consultar({
-      dateRanges: [janelas[0]],
+      dateRanges: janela,
       dimensions: [{ name: "date" }],
       metrics: [{ name: "sessions" }, { name: "activeUsers" }],
       orderBys: [{ dimension: { dimensionName: "date" } }],
       limit: 400,
     }),
     consultar({
-      dateRanges: [janelas[0]],
+      dateRanges: janela,
       dimensions: [{ name: "sessionDefaultChannelGroup" }],
       metrics: [{ name: "sessions" }],
       orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
@@ -132,12 +220,12 @@ async function carregarVisaoGeral(periodo: Periodo): Promise<VisaoGeral> {
   ]);
 
   return {
-    usuariosAtivos: primeiro(nativas, 0),
-    sessoes: primeiro(nativas, 1),
-    sessoesAnterior: nativas[1]?.valores[1] ?? 0,
-    cliquesWhatsapp: primeiro(whatsapp, 0),
-    cliquesWhatsappAnterior: whatsapp[1]?.valores[0] ?? 0,
-    sessoesComWhatsapp: primeiro(whatsapp, 1),
+    usuariosAtivos: primeiro(nativas.atual, 0),
+    sessoes: primeiro(nativas.atual, 1),
+    sessoesAnterior: primeiro(nativas.anterior, 1),
+    cliquesWhatsapp: primeiro(whatsapp.atual, 0),
+    cliquesWhatsappAnterior: primeiro(whatsapp.anterior, 0),
+    sessoesComWhatsapp: primeiro(whatsapp.atual, 1),
     serie: serie.map((l) => ({
       data: l.chaves[0],
       sessoes: l.valores[0],
