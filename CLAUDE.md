@@ -373,11 +373,12 @@ perto. Por isso:
 `(site)` e `(painel)` são route groups: não aparecem em URL nenhuma, e nenhum
 endereço do site mudou por causa deles.
 
-### Os cinco pontos que quebram o painel sem erro nenhum
+### Os seis pontos que quebram o painel sem erro nenhum
 
 | O que | Onde | O que acontece se mexer |
 |---|---|---|
 | Ler o hostname pelo cabeçalho da requisição | `hostnameDaRequisicao()` em `middleware.ts` | `req.nextUrl.hostname` responde `localhost` em desenvolvimento **e todo o roteamento vira letra morta, em silêncio**. Já aconteceu em 06/08 |
+| Reescrever para uma rota que **existe** e chama `notFound()` | `/nao-encontrado` e `/painel/nao-encontrado` | Reescrever para um caminho inventado devolve 404 em desenvolvimento e **200 em produção**. O corpo diz "Página não encontrada" e o cabeçalho diz que a página existe — soft 404, e o `robots.txt` do site permite rastrear tudo. Achado E0.10, em 06/08 |
 | `getVercelOidcToken()` **sem argumento** | `lib/ga4.ts` | Informar `{ audience }` troca o token, e o provedor do Google recusa. Custou um dia inteiro em 05/08 |
 | Os nomes das 5 dimensões | `DIMENSAO` em `lib/ga4.ts` | Nome errado não dá erro: a consulta responde com sucesso e a coluna vem **vazia**. Descoberto meses depois |
 | O `overrides` de `google-auth-library` | `package.json` | Sem ele há duas cópias da biblioteca, com tipos diferentes para a mesma classe, e o build quebra |
@@ -481,5 +482,17 @@ vira aditivo formal, nunca execução direta.
 ---
 
 **Última atualização:** 2026-08-06 · Instrumentação em produção desde
-2026-08-05, container GTM versão 2, 30 testes aprovados e 1 reprovado (T28).
-Painel do cliente construído em 2026-08-06, ainda não publicado.
+2026-08-05, container GTM versão 2. **Painel publicado em 2026-08-06** em
+`dados.victorfolster.com.br`. 31 testes aprovados, 1 parcial (T33), 1 reprovado
+(T28). Falta entrar no painel e conferir os 12 indicadores.
+
+> **Como conferir, em 10 segundos, que a separação continua de pé.** Abra o
+> console em `www.victorfolster.com.br` e digite `typeof window.dataLayer` —
+> tem que responder `"object"`. Faça o mesmo em
+> `dados.victorfolster.com.br/painel/entrar` — tem que responder `"undefined"`.
+> Se os dois responderem igual, alguma coisa saiu do lugar.
+>
+> **Não confira isso com `grep` no HTML.** O código do container aparece no
+> payload da página do painel como texto serializado e **nunca executa** —
+> concluir pelo arquivo dá a resposta exatamente oposta à verdade. Foi medido
+> em 06/08.
