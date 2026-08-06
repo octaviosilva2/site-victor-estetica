@@ -3,15 +3,25 @@ import Link from "next/link";
 import { whatsappUrl } from "@/lib/siteConfig";
 import Nav from "@/components/Nav";
 import FooterAndFloating from "@/components/FooterAndFloating";
+import SiteLayout from "@/app/(site)/layout";
 
 export const metadata = {
   title: "Página não encontrada",
   robots: { index: false, follow: true },
 };
 
+// Este arquivo precisa ficar na RAIZ de `app/`, e não dentro de `(site)`.
+// Dentro do route group ele só atende as rotas do próprio grupo, e qualquer
+// endereço desconhecido cai no 404 padrão do Next — página em inglês, sem o
+// menu, sem o rodapé e sem o banner de consentimento. Foi o que aconteceu ao
+// mover o arquivo em 2026-08-05, e só apareceu abrindo uma URL inexistente.
+//
+// Como ele mora fora do grupo, o layout de `(site)` não o envolve: por isso a
+// medição e o banner são montados aqui explicitamente, reaproveitando o mesmo
+// componente de layout em vez de repetir a ordem de carregamento à mão.
 export default function NotFound() {
   return (
-    <>
+    <SiteLayout>
       <Nav />
       <main className="final" style={{ minHeight: "60vh" }}>
         <div className="container">
@@ -37,6 +47,6 @@ export default function NotFound() {
         </div>
       </main>
       <FooterAndFloating />
-    </>
+    </SiteLayout>
   );
 }
