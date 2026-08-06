@@ -325,6 +325,12 @@ Custou uma rodada inteira de diagnóstico em 2026-08-05.
   a alteração está errada.
 - **O canal de contato de privacidade na política é o WhatsApp**, porque o
   cliente ainda não definiu e-mail de encarregado. Trocar quando ele definir.
+- **Os 5 casos de antes e depois ficam com o rótulo genérico "Antes e depois".**
+  O campo `label` em `ResultsSection.tsx` está vazio **por decisão do cliente**,
+  registrada em 2026-08-05 (decisão D6 do escopo contratado). Chegou a existir a
+  pendência de o Victor informar qual procedimento é cada caso; ele optou por
+  não identificar. Preencher o `label` por conta própria, achando que é lacuna
+  esquecida, desfaz uma escolha dele sobre a própria imagem de pacientes.
 
 ---
 
