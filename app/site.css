@@ -473,16 +473,18 @@
   }
   .compare-before,.compare-after{position:absolute;inset:0;background:var(--bg-alt);}
   /* Recorte, não largura: mudar a largura espremeria a foto durante o arraste.
+     O corte é pela ESQUERDA, então a camada de depois ocupa da alça até a
+     borda direita e o antes, na camada de baixo, fica visível à esquerda.
      Ver o comentário em components/CompareCard.tsx. */
-  .compare-after{clip-path:inset(0 50% 0 0);}
+  .compare-after{clip-path:inset(0 0 0 50%);}
   .compare-img{object-fit:cover;pointer-events:none;}
   .compare-tag{
     position:absolute;bottom:9px;font-size:10px;letter-spacing:.1em;
     text-transform:uppercase;color:var(--white);font-weight:700;
     background:rgba(33,36,30,.55);padding:4px 8px;border-radius:4px;
   }
-  .compare-tag-before{right:9px;}
-  .compare-tag-after{left:9px;}
+  .compare-tag-before{left:9px;}
+  .compare-tag-after{right:9px;}
   .compare-handle{
     position:absolute;top:0;bottom:0;left:50%;width:0;
     transform:translateX(-50%);cursor:ew-resize;touch-action:none;

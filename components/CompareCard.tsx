@@ -38,7 +38,11 @@ export default function CompareCard({ label, before, after, alt }: Props) {
     // reduzia a largura da camada — com imagem dentro, isso espremeria o
     // rosto horizontalmente enquanto a pessoa arrasta. O clip-path corta a
     // camada mantendo a foto no tamanho original.
-    after.style.clipPath = `inset(0 ${100 - percent}% 0 0)`;
+    //
+    // O corte é pela ESQUERDA: a camada de depois vai da alça até a borda
+    // direita, deixando o antes, que está na camada de baixo, visível à
+    // esquerda. Inverter este lado inverte de que lado aparece cada foto.
+    after.style.clipPath = `inset(0 0 0 ${percent}%)`;
     handle.style.left = `${percent}%`;
   };
 
